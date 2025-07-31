@@ -1,0 +1,263 @@
+# callstacks file version: 8
+#    rowid	    parent	       rva	 loop	 system	                                function	binary	instance_start_rva	instance_size	instance_end_rva	finst_rowid	roi	is_inlined	jit_method_id	tripcounts_roi	flops_roi	cachesim_roi	data_transfer_roi	projection_roi
+         1	        -1	     29920	    0	      0	                                  _start	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	29920	38	0	4	0	0	0	0	0	0	0	0
+         2	        -1	     29956	    0	      0	                                  _start	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	29920	38	0	4	0	0	0	0	0	0	0	0
+         3	       177	    172682	    1	      1	[Loop at line 347 in __libc_start_main_impl]	/lib/x86_64-linux-gnu/libc.so.6	172651,172784	132,64	0	61	0	0	0	0	0	0	0	0
+         4	         3	    172489	    0	      1	                  __libc_start_call_main	/lib/x86_64-linux-gnu/libc.so.6	172368	164	0	63	0	0	0	0	0	0	0	0
+         5	         4	     30971	    0	      0	                                    main	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	30752	820	0	5	0	0	0	0	0	0	0	0
+         6	         5	    146336	    0	      0	                         bsp_read_matrix	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	144064	2441	0	9	0	0	0	0	0	0	0	0
+         7	       153	    125055	    1	      0	[Loop@0x41e7fc in bsp_mmread_explicit_coordinate]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	124924,127152,128431	177,29,29	128408,121678	20	0	0	0	0	0	0	0	0
+         8	         7	    393179	    0	      1	                    __GI___isoc99_sscanf	/lib/x86_64-linux-gnu/libc.so.6	392928	289	0	64	0	0	0	0	0	0	0	0
+         9	         8	    440638	    0	      1	                      __vfscanf_internal	/lib/x86_64-linux-gnu/libc.so.6	440368	36612	0	65	0	0	0	0	0	0	0	0
+        10	       179	    457781	    1	      1	[Loop at line 2124 in __vfscanf_internal]	/lib/x86_64-linux-gnu/libc.so.6	457126,457552,458134,461640,462064,462256,466279,466832,466929,467380,468455,468863,470347,470614,471634,474343	214,307,134,420,188,18,76,53,20,20,29,16,16,21,21,16	0	66	0	0	0	0	0	0	0	0
+        11	         8	    449268	    0	      1	                      __vfscanf_internal	/lib/x86_64-linux-gnu/libc.so.6	440368	36612	0	65	0	0	0	0	0	0	0	0
+        12	       181	    359550	    1	      1	[Loop at line 451 in __GI_____strtoul_l_internal]	/lib/x86_64-linux-gnu/libc.so.6	359536,359792,359808	106,7,50	0	67	0	0	0	0	0	0	0	0
+        13	       153	    125051	    1	      0	[Loop@0x41e7fc in bsp_mmread_explicit_coordinate]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	124924,127152,128431	177,29,29	128408,121678	20	0	0	0	0	0	0	0	0
+        14	        11	    359495	    0	      1	             __GI_____strtoul_l_internal	/lib/x86_64-linux-gnu/libc.so.6	359264	1303	0	68	0	0	0	0	0	0	0	0
+        15	         8	    442678	    0	      1	                      __vfscanf_internal	/lib/x86_64-linux-gnu/libc.so.6	440368	36612	0	65	0	0	0	0	0	0	0	0
+        16	       153	    125020	    1	      0	[Loop@0x41e7fc in bsp_mmread_explicit_coordinate]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	124924,127152,128431	177,29,29	128408,121678	20	0	0	0	0	0	0	0	0
+        17	        16	    547795	    0	      1	                               _IO_fgets	/lib/x86_64-linux-gnu/libc.so.6	547632	470	0	69	0	0	0	0	0	0	0	0
+        18	       183	    552825	    1	      1	[Loop at line 55 in __GI__IO_getline_info]	/lib/x86_64-linux-gnu/libc.so.6	552744	115	0	70	0	0	0	0	0	0	0	0
+        19	        18	    611793	    0	      1	                  __GI__IO_default_uflow	/lib/x86_64-linux-gnu/libc.so.6	611744	87	0	72	0	0	0	0	0	0	0	0
+        20	        19	    599972	    0	      1	                  _IO_new_file_underflow	/lib/x86_64-linux-gnu/libc.so.6	599616	834	0	73	0	0	0	0	0	0	0	0
+        21	        20	   1198189	    0	      1	                     tpss_read_mod1_ver0	/opt/intel/oneapi/advisor/2025.2/lib64/libtpsstool.so	1196176	2789	0	14	0	0	0	0	0	0	0	0
+        22	        21	   7803011	    0	      1	                           func@0x771000	/opt/intel/oneapi/advisor/2025.2/lib64/libtpsstool.so	7802880	176	0	96	0	0	0	0	0	0	0	0
+        23	       157	    121954	    1	      0	[Loop@0x41db4e in bsp_mmread_explicit_coordinate]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	121678,122481,123480,125290,125613,127088,128735,128816	380,51,190,8,7,29,23,34	122058,122532	26	0	0	0	0	0	0	0	0
+        24	       185	    302108	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	302064,302104	13,5	0	74	0	1	0	0	0	0	0	0
+        25	       187	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300823	14	0	76	0	1	0	0	0	0	0	0
+        26	       189	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300837	28	0	78	0	1	0	0	0	0	0	0
+        27	       191	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300837	28	0	78	0	1	0	0	0	0	0	0
+        28	       193	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300823	14	0	76	0	1	0	0	0	0	0	0
+        29	       195	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300837	28	0	78	0	1	0	0	0	0	0	0
+        30	       197	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300837	28	0	78	0	1	0	0	0	0	0	0
+        31	       199	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300823	14	0	76	0	1	0	0	0	0	0	0
+        32	       201	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300837	28	0	78	0	1	0	0	0	0	0	0
+        33	       203	    301391	    1	      1	    [Loop at line 237 in msort_with_tmp]	/lib/x86_64-linux-gnu/libc.so.6	301376,301424	41,22	0	79	0	0	0	0	0	0	0	0
+        34	        33	    113311	    0	      0	bsp_coo_comparison_row_sort_operator_impl_	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	113264	5029	0	27	0	0	0	0	0	0	0	0
+        35	       205	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300837	28	0	78	0	1	0	0	0	0	0	0
+        36	       207	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300837	28	0	78	0	1	0	0	0	0	0	0
+        37	       209	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300823	14	0	76	0	1	0	0	0	0	0	0
+        38	       211	    301432	    1	      1	    [Loop at line 237 in msort_with_tmp]	/lib/x86_64-linux-gnu/libc.so.6	301376,301424	41,22	0	79	0	0	0	0	0	0	0	0
+        39	         4	     31020	    0	      0	                                    main	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	30752	820	0	5	0	0	0	0	0	0	0	0
+        40	        39	     35911	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+        41	        40	    146336	    0	      0	                         bsp_read_matrix	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	144064	2441	0	9	0	0	0	0	0	0	0	0
+        42	       160	    125055	    1	      0	[Loop@0x41e7fc in bsp_mmread_explicit_coordinate]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	124924,127152,128431	177,29,29	128408,121678	20	0	0	0	0	0	0	0	0
+        43	        42	    393179	    0	      1	                    __GI___isoc99_sscanf	/lib/x86_64-linux-gnu/libc.so.6	392928	289	0	64	0	0	0	0	0	0	0	0
+        44	        43	    442526	    0	      1	                      __vfscanf_internal	/lib/x86_64-linux-gnu/libc.so.6	440368	36612	0	65	0	0	0	0	0	0	0	0
+        45	       213	    440943	    1	      1	[Loop at line 381 in __vfscanf_internal]	/lib/x86_64-linux-gnu/libc.so.6	440800,441312,441633,441712,441968,442000,442941,442960,444531,450140	151,63,10,22,26,73,17,77,20,20	0	80	0	0	0	0	0	0	0	0
+        46	       160	    125020	    1	      0	[Loop@0x41e7fc in bsp_mmread_explicit_coordinate]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	124924,127152,128431	177,29,29	128408,121678	20	0	0	0	0	0	0	0	0
+        47	        46	    547795	    0	      1	                               _IO_fgets	/lib/x86_64-linux-gnu/libc.so.6	547632	470	0	69	0	0	0	0	0	0	0	0
+        48	       215	    552825	    1	      1	[Loop at line 55 in __GI__IO_getline_info]	/lib/x86_64-linux-gnu/libc.so.6	552744	115	0	70	0	0	0	0	0	0	0	0
+        49	        48	    611793	    0	      1	                  __GI__IO_default_uflow	/lib/x86_64-linux-gnu/libc.so.6	611744	87	0	72	0	0	0	0	0	0	0	0
+        50	        49	    599972	    0	      1	                  _IO_new_file_underflow	/lib/x86_64-linux-gnu/libc.so.6	599616	834	0	73	0	0	0	0	0	0	0	0
+        51	       146	   1196954	    1	      1	  [Loop@0x124370 in tpss_read_mod1_ver0]	/opt/intel/oneapi/advisor/2025.2/lib64/libtpsstool.so	1196912	183	0	97	0	0	0	0	0	0	0	0
+        52	        51	   1161825	    0	      1	                        __GI___libc_read	/lib/x86_64-linux-gnu/libc.so.6	1161808	149	0	81	0	0	0	0	0	0	0	0
+        53	        43	    449268	    0	      1	                      __vfscanf_internal	/lib/x86_64-linux-gnu/libc.so.6	440368	36612	0	65	0	0	0	0	0	0	0	0
+        54	        53	    359291	    0	      1	             __GI_____strtoul_l_internal	/lib/x86_64-linux-gnu/libc.so.6	359264	1303	0	68	0	0	0	0	0	0	0	0
+        55	        42	    393148	    0	      1	                    __GI___isoc99_sscanf	/lib/x86_64-linux-gnu/libc.so.6	392928	289	0	64	0	0	0	0	0	0	0	0
+        56	       160	    125030	    1	      0	[Loop@0x41e7fc in bsp_mmread_explicit_coordinate]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	124924,127152,128431	177,29,29	128408,121678	20	0	0	0	0	0	0	0	0
+        57	       164	    121954	    1	      0	[Loop@0x41db4e in bsp_mmread_explicit_coordinate]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	121678,122481,123480,125290,125613,127088,128735,128816	380,51,190,8,7,29,23,34	122058,122532	26	0	0	0	0	0	0	0	0
+        58	       217	    302108	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	302064,302104	13,5	0	74	0	1	0	0	0	0	0	0
+        59	       219	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300823	14	0	76	0	1	0	0	0	0	0	0
+        60	       221	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300823	14	0	76	0	1	0	0	0	0	0	0
+        61	       223	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300837	28	0	78	0	1	0	0	0	0	0	0
+        62	       225	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300837	28	0	78	0	1	0	0	0	0	0	0
+        63	       227	    301391	    1	      1	    [Loop at line 237 in msort_with_tmp]	/lib/x86_64-linux-gnu/libc.so.6	301376,301424	41,22	0	79	0	0	0	0	0	0	0	0
+        64	        63	    113531	    0	      0	bsp_coo_comparison_row_sort_operator_impl_	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	113264	5029	0	27	0	0	0	0	0	0	0	0
+        65	       229	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300837	28	0	78	0	1	0	0	0	0	0	0
+        66	       231	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300823	14	0	76	0	1	0	0	0	0	0	0
+        67	       233	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300823	14	0	76	0	1	0	0	0	0	0	0
+        68	       235	    301391	    1	      1	    [Loop at line 237 in msort_with_tmp]	/lib/x86_64-linux-gnu/libc.so.6	301376,301424	41,22	0	79	0	0	0	0	0	0	0	0
+        69	        68	    114164	    0	      0	bsp_coo_comparison_row_sort_operator_impl_	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	113264	5029	0	27	0	0	0	0	0	0	0	0
+        70	       237	    301407	    1	      1	    [Loop at line 237 in msort_with_tmp]	/lib/x86_64-linux-gnu/libc.so.6	301376,301424	41,22	0	79	0	0	0	0	0	0	0	0
+        71	        39	     35969	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+        72	       166	     33158	    1	      0	[Loop at line 135 in bsp_convert_matrix]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	33104	160	33320,33347	30	0	0	0	0	0	0	0	0
+        73	        72	     51672	    0	      0	           bsp_array_read<unsigned long>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	51584	95	0	32	0	0	0	0	0	0	0	0
+        74	        73	     55810	    0	      0	std::__do_visit<std::__detail::__variant::__deduce_visit_result<void>, bsp_array_read<unsigned long>(void, bsp_array_t, unsigned long, std::__detail::__variant::__deduce_visit_result<void>&)::{lambda(std::__detail::__variant::__deduce_visit_result<void>*)#1}, std::variant<unsigned char*, unsigned short*, unsigned int*, unsigned long*, signed char*, short*, int*, long*, float*, double*, complexfloat*, complexdouble*>&>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	55792	49	0	33	0	0	0	0	0	0	0	0
+        75	       169	     36088	    1	      0	[Loop at line 65 in experiment_spmm_csr<double, int>]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	36080	44	36124	34	0	0	0	0	0	0	0	0
+        76	        75	    151876	    0	      0	                           __libm_sin_l9	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	151840	358	0	36	0	0	0	0	0	0	0	0
+        77	       169	     36107	    1	      0	[Loop at line 65 in experiment_spmm_csr<double, int>]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	36080	44	36124	34	0	0	0	0	0	0	0	0
+        78	        75	    152136	    0	      0	                           __libm_sin_l9	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	151840	358	0	36	0	0	0	0	0	0	0	0
+        79	        75	    151911	    0	      0	                           __libm_sin_l9	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	151840	358	0	36	0	0	0	0	0	0	0	0
+        80	        39	     36172	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+        81	        80	    166570	    0	      0	                  __intel_avx_rep_memset	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	166304	4295	0	42	0	0	0	0	0	0	0	0
+        82	        39	     36190	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+        83	        82	     33504	    0	      0	                __annotate_routines_init	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	33456	1122	0	43	0	0	0	0	0	0	0	0
+        84	       239	    623198	    0	      1	                   dlopen_implementation	/lib/x86_64-linux-gnu/libc.so.6	623168	39	0	82	0	1	0	0	0	0	0	0
+        85	        84	    621698	    0	      1	                            _dlerror_run	/lib/x86_64-linux-gnu/libc.so.6	621536	505	0	84	0	0	0	0	0	0	0	0
+        86	        85	      5736	    0	      1	                         _dl_catch_error	/lib64/ld-linux-x86-64.so.2	5696	75	0	7	0	0	0	0	0	0	0	0
+        87	        86	      5403	    0	      1	                __GI__dl_catch_exception	/lib64/ld-linux-x86-64.so.2	5248	433	0	8	0	0	0	0	0	0	0	0
+        88	        87	    623011	    0	      1	                             dlopen_doit	/lib/x86_64-linux-gnu/libc.so.6	622912	162	0	85	0	0	0	0	0	0	0	0
+        89	        88	     33504	    0	      0	                __annotate_routines_init	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	33456	1122	0	43	0	0	0	0	0	0	0	0
+        90	       251	     53603	    1	      1	          [Loop at line 888 in _dl_open]	/lib64/ld-linux-x86-64.so.2	53532,54112	124,173	0	10	0	0	0	0	0	0	0	0
+        91	        90	      5403	    0	      1	                __GI__dl_catch_exception	/lib64/ld-linux-x86-64.so.2	5248	433	0	8	0	0	0	0	0	0	0	0
+        92	        91	     52511	    0	      1	                          dl_open_worker	/lib64/ld-linux-x86-64.so.2	52448	253	0	24	0	0	0	0	0	0	0	0
+        93	        92	      5403	    0	      1	                __GI__dl_catch_exception	/lib64/ld-linux-x86-64.so.2	5248	433	0	8	0	0	0	0	0	0	0	0
+        94	        93	     55708	    0	      1	                    dl_open_worker_begin	/lib64/ld-linux-x86-64.so.2	55344	2638	0	25	0	0	0	0	0	0	0	0
+        95	        94	   9713204	    0	      1	                           func@0x9435f0	/opt/intel/oneapi/advisor/2025.2/lib64/libtpsstool.so	9713136	128	0	98	0	0	0	0	0	0	0	0
+        96	        95	   9711716	    0	      1	                           func@0x943000	/opt/intel/oneapi/advisor/2025.2/lib64/libtpsstool.so	9711616	240	0	99	0	0	0	0	0	0	0	0
+        97	       148	   9703783	    1	      1	        [Loop@0x940c10 in func@0x9406e0]	/opt/intel/oneapi/advisor/2025.2/lib64/libtpsstool.so	9702416,9704496,9705248,9705264,9705280,9705312,9705336,9705360,9705384,9705416,9705544,9706240,9706440,9706512,9706544,9706576,9706608,9706640,9706672,9706704,9706736,9706768,9706944,9708432,9709112,9709360,9709721,9710112,9710452,9710892,9711098	2079,750,10,10,30,18,22,18,26,123,103,194,69,30,30,30,30,30,30,30,30,169,1487,673,238,343,240,256,419,114,150	0	100	0	0	0	0	0	0	0	0
+        98	        97	    317845	    0	      1	std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::append	/opt/intel/oneapi/advisor/2025.2/lib64/pinruntime/libc++.so	317664	214	0	1	0	0	0	0	0	0	0	0
+        99	        98	    316409	    0	      1	std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::__grow_by_and_replace	/opt/intel/oneapi/advisor/2025.2/lib64/pinruntime/libc++.so	316240	400	0	2	0	0	0	0	0	0	0	0
+       100	       253	     52603	    0	      1	                          dl_open_worker	/lib64/ld-linux-x86-64.so.2	52560,52661	89,27	0	29	0	1	0	0	0	0	0	0
+       101	       100	      5553	    0	      1	                __GI__dl_catch_exception	/lib64/ld-linux-x86-64.so.2	5248	433	0	8	0	0	0	0	0	0	0	0
+       102	       256	     22563	    0	      1	                               call_init	/lib64/ld-linux-x86-64.so.2	22517,22559	38,5	0	37	0	1	0	0	0	0	0	0
+       103	       259	     22302	    1	      1	          [Loop at line 73 in call_init]	/lib64/ld-linux-x86-64.so.2	22288	23	0	40	0	0	0	0	0	0	0	0
+       104	       103	     36981	    0	      1	                             func@0x9010	/opt/intel/oneapi/advisor/2025.2/lib64/runtime/libittnotify_collector.so	36880	208	0	3	0	0	0	0	0	0	0	0
+       105	       104	     37683	    0	      1	                             func@0x9320	/opt/intel/oneapi/advisor/2025.2/lib64/runtime/libittnotify_collector.so	37664	48	0	12	0	0	0	0	0	0	0	0
+       106	       105	    552512	    0	      1	                            func@0x86e40	/opt/intel/oneapi/advisor/2025.2/lib64/runtime/libittnotify_collector.so	552512	32	0	13	0	0	0	0	0	0	0	0
+       107	       173	     36573	    1	      0	[Loop at line 84 in experiment_spmm_csr<double, int>]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	36448,36704	254,64	36256	44	0	0	0	0	0	0	0	0
+       108	       107	     48872	    0	      0	                  bsp_array_read<double>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	48784	95	0	46	0	0	0	0	0	0	0	0
+       109	       108	     63872	    0	      0	std::__invoke<bsp_array_read<double>(void, bsp_array_t, unsigned long, double&)::{lambda(double*)#1}, double*&>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	63872	5	0	47	0	0	0	0	0	0	0	0
+       110	       172	     36256	    1	      0	[Loop at line 81 in experiment_spmm_csr<double, int>]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	36256,36448,36704	191,254,64	36768	45	0	0	0	0	0	0	0	0
+       111	       173	     36515	    1	      0	[Loop at line 84 in experiment_spmm_csr<double, int>]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	36448,36704	254,64	36256	44	0	0	0	0	0	0	0	0
+       112	       111	     48776	    0	      0	                     bsp_array_read<int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	48688	95	0	48	0	0	0	0	0	0	0	0
+       113	       112	     61225	    0	      0	_ZSt5visitIZ14bsp_array_readIiEv11bsp_array_tmRT_EUlPS2_E_JRSt7variantIJPhPtPjPmPaPsPiPlPfPdPCfPCdEEEENSt13invoke_resultIS2_JDpNSt13__conditionalIX21is_lvalue_reference_vIT0_EEE4typeIRNSt19variant_alternativeILm0ENSt16remove_referenceIDTclsr9__variantE4__asclsr3stdE7declvalISP_EEEEE4typeEE4typeEOSY_EEEE4typeEOS2_DpOSP_	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	61200	58	0	49	0	0	0	0	0	0	0	0
+       114	       113	     55712	    0	      0	std::variant<unsigned char*, unsigned short*, unsigned int*, unsigned long*, signed char*, short*, int*, long*, float*, double*, complexfloat*, complexdouble*>::valueless_by_exception	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	55712	10	0	50	0	0	0	0	0	0	0	0
+       115	        39	     37738	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+       116	       115	     50851	    0	      0	std::vector<double, std::allocator<double>>::vector<double*, void>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	50816	61	0	51	0	0	0	0	0	0	0	0
+       117	       116	    106303	    0	      0	std::vector<double, std::allocator<double>>::_M_range_initialize<double*>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	106208	110	0	52	0	0	0	0	0	0	0	0
+       118	       117	    106732	    0	      0	std::__copy_move_a<(bool)0, double*, double*>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	106672	84	0	53	0	0	0	0	0	0	0	0
+       119	       118	    106880	    0	      0	std::__copy_move<(bool)0, (bool)1, std::random_access_iterator_tag>::__copy_m<double, double>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	106848	63	0	54	0	0	0	0	0	0	0	0
+       120	       242	   1609239	    1	      1	[Loop at line 755 in __memmove_avx_unaligned_erms]	/lib/x86_64-linux-gnu/libc.so.6	1609109	174	0	86	0	0	0	0	0	0	0	0
+       121	       242	   1609255	    1	      1	[Loop at line 755 in __memmove_avx_unaligned_erms]	/lib/x86_64-linux-gnu/libc.so.6	1609109	174	0	86	0	0	0	0	0	0	0	0
+       122	        39	     37905	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+       123	       122	     51282	    0	      0	std::vector<double, std::allocator<double>>::vector	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	51184	134	0	55	0	0	0	0	0	0	0	0
+       124	       123	    112940	    0	      0	std::__copy_move_a<(bool)0, __gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double>>>, double*>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	112880	84	0	56	0	0	0	0	0	0	0	0
+       125	       124	    113088	    0	      0	std::__copy_move<(bool)0, (bool)1, std::random_access_iterator_tag>::__copy_m<double const, double>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	113056	63	0	57	0	0	0	0	0	0	0	0
+       126	       246	   1609224	    1	      1	[Loop at line 755 in __memmove_avx_unaligned_erms]	/lib/x86_64-linux-gnu/libc.so.6	1609109	174	0	86	0	0	0	0	0	0	0	0
+       127	       246	   1609255	    1	      1	[Loop at line 755 in __memmove_avx_unaligned_erms]	/lib/x86_64-linux-gnu/libc.so.6	1609109	174	0	86	0	0	0	0	0	0	0	0
+       128	        39	     37928	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+       129	       128	     50980	    0	      0	                npy_store_vector<double>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	50880	145	0	58	0	0	0	0	0	0	0	0
+       130	       129	    108325	    0	      0	           npy::SaveArrayAsNumpy<double>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	108096	390	0	59	0	0	0	0	0	0	0	0
+       131	       130	   1402104	    0	      1	                     std::ostream::write	/lib/x86_64-linux-gnu/libstdc++.so.6	1402016	413	0	6	0	0	0	0	0	0	0	0
+       132	       131	   1220140	    0	      1	std::basic_filebuf<char, std::char_traits<char>>::xsputn	/lib/x86_64-linux-gnu/libstdc++.so.6	1220000	301	0	15	0	0	0	0	0	0	0	0
+       133	       150	   1020514	    1	      1	[Loop@0xf924a in std::__basic_file<char>::xsputn_2]	/lib/x86_64-linux-gnu/libstdc++.so.6	1020490,1020544	52,10	0	16	0	0	0	0	0	0	0	0
+       134	       249	   1218715	    0	      1	                           __GI___writev	/lib/x86_64-linux-gnu/libc.so.6	1218690,1218768	49,21	0	89	0	1	0	0	0	0	0	0
+       135	       129	    108355	    0	      0	           npy::SaveArrayAsNumpy<double>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	108096	390	0	59	0	0	0	0	0	0	0	0
+       136	       135	   1246027	    0	      1	std::basic_ofstream<char, std::char_traits<char>>::~basic_ofstream	/lib/x86_64-linux-gnu/libstdc++.so.6	1245952	173	0	18	0	0	0	0	0	0	0	0
+       137	       136	   1237909	    0	      1	std::basic_filebuf<char, std::char_traits<char>>::close	/lib/x86_64-linux-gnu/libstdc++.so.6	1237744	305	0	19	0	0	0	0	0	0	0	0
+       138	       137	   1020151	    0	      1	          std::__basic_file<char>::close	/lib/x86_64-linux-gnu/libstdc++.so.6	1020096	75	0	23	0	0	0	0	0	0	0	0
+       139	       138	    545696	    0	      1	                          _IO_new_fclose	/lib/x86_64-linux-gnu/libc.so.6	545424	606	0	91	0	0	0	0	0	0	0	0
+       140	       139	    596289	    0	      1	                   _IO_new_file_close_it	/lib/x86_64-linux-gnu/libc.so.6	596176	362	0	92	0	0	0	0	0	0	0	0
+       141	       140	   1164811	    0	      1	                   __GI___close_nocancel	/lib/x86_64-linux-gnu/libc.so.6	1164800	42	0	93	0	0	0	0	0	0	0	0
+       142	        39	     37941	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+       143	       142	    106339	    0	      0	std::_Vector_base<double, std::allocator<double>>::~_Vector_base	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	106320	30	0	60	0	0	0	0	0	0	0	0
+       144	       143	    712185	    0	      1	                        __GI___libc_free	/lib/x86_64-linux-gnu/libc.so.6	711984	271	0	94	0	0	0	0	0	0	0	0
+       145	       144	   1203531	    0	      1	                                __munmap	/lib/x86_64-linux-gnu/libc.so.6	1203520	37	0	95	0	0	0	0	0	0	0	0
+       146	        50	   1196912	    0	      1	                     tpss_read_mod1_ver0	/opt/intel/oneapi/advisor/2025.2/lib64/libtpsstool.so	1196176	2789	0	14	0	0	0	0	0	0	0	0
+       147	        50	   1196954	    0	      1	                     tpss_read_mod1_ver0	/opt/intel/oneapi/advisor/2025.2/lib64/libtpsstool.so	1196176	2789	0	14	0	0	0	0	0	0	0	0
+       148	        96	   9702416	    0	      1	                           func@0x9406e0	/opt/intel/oneapi/advisor/2025.2/lib64/libtpsstool.so	9701088	10528	0	101	0	0	0	0	0	0	0	0
+       149	        96	   9703783	    0	      1	                           func@0x9406e0	/opt/intel/oneapi/advisor/2025.2/lib64/libtpsstool.so	9701088	10528	0	101	0	0	0	0	0	0	0	0
+       150	       132	   1020490	    0	      1	       std::__basic_file<char>::xsputn_2	/lib/x86_64-linux-gnu/libstdc++.so.6	1020400	271	0	17	0	0	0	0	0	0	0	0
+       151	       132	   1020514	    0	      1	       std::__basic_file<char>::xsputn_2	/lib/x86_64-linux-gnu/libstdc++.so.6	1020400	271	0	17	0	0	0	0	0	0	0	0
+       152	         6	    124924	    0	      0	          bsp_mmread_explicit_coordinate	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	120016	9094	0	21	0	0	0	0	0	0	0	0
+       153	       152	    124924	    1	      0	[Loop@0x41e7fc in bsp_mmread_explicit_coordinate]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	124924,127152,128408	177,29,52	121678	22	0	0	0	0	0	0	0	0
+       154	         6	    125055	    0	      0	          bsp_mmread_explicit_coordinate	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	120016	9094	0	21	0	0	0	0	0	0	0	0
+       155	         6	    125051	    0	      0	          bsp_mmread_explicit_coordinate	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	120016	9094	0	21	0	0	0	0	0	0	0	0
+       156	         6	    125020	    0	      0	          bsp_mmread_explicit_coordinate	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	120016	9094	0	21	0	0	0	0	0	0	0	0
+       157	         6	    121678	    0	      0	          bsp_mmread_explicit_coordinate	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	120016	9094	0	21	0	0	0	0	0	0	0	0
+       158	         6	    121954	    0	      0	          bsp_mmread_explicit_coordinate	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	120016	9094	0	21	0	0	0	0	0	0	0	0
+       159	        41	    124924	    0	      0	          bsp_mmread_explicit_coordinate	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	120016	9094	0	21	0	0	0	0	0	0	0	0
+       160	       159	    124924	    1	      0	[Loop@0x41e7fc in bsp_mmread_explicit_coordinate]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	124924,127152,128408	177,29,52	121678	22	0	0	0	0	0	0	0	0
+       161	        41	    125055	    0	      0	          bsp_mmread_explicit_coordinate	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	120016	9094	0	21	0	0	0	0	0	0	0	0
+       162	        41	    125020	    0	      0	          bsp_mmread_explicit_coordinate	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	120016	9094	0	21	0	0	0	0	0	0	0	0
+       163	        41	    125030	    0	      0	          bsp_mmread_explicit_coordinate	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	120016	9094	0	21	0	0	0	0	0	0	0	0
+       164	        41	    121678	    0	      0	          bsp_mmread_explicit_coordinate	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	120016	9094	0	21	0	0	0	0	0	0	0	0
+       165	        41	    121954	    0	      0	          bsp_mmread_explicit_coordinate	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	120016	9094	0	21	0	0	0	0	0	0	0	0
+       166	        71	     33104	    0	      0	                      bsp_convert_matrix	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	31584	1863	0	31	0	0	0	0	0	0	0	0
+       167	        71	     33158	    0	      0	                      bsp_convert_matrix	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	31584	1863	0	31	0	0	0	0	0	0	0	0
+       168	        39	     36048	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+       169	       168	     36080	    1	      0	[Loop at line 0 in experiment_spmm_csr<double, int>]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	36048	78	36126	35	0	0	0	0	0	0	0	0
+       170	        39	     36088	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+       171	        39	     36107	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+       172	        39	     36256	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+       173	       172	     36448	    1	      0	[Loop at line 81 in experiment_spmm_csr<double, int>]	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	36256,36448,36704	191,254,64	36768	45	0	0	0	0	0	0	0	0
+       174	        39	     36573	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+       175	        39	     36256	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+       176	        39	     36515	    0	      0	        experiment_spmm_csr<double, int>	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	35824	3160	0	28	0	0	0	0	0	0	0	0
+       177	         2	    172651	    0	      1	                  __libc_start_main_impl	/lib/x86_64-linux-gnu/libc.so.6	172544	334	0	62	0	0	0	0	0	0	0	0
+       178	         2	    172682	    0	      1	                  __libc_start_main_impl	/lib/x86_64-linux-gnu/libc.so.6	172544	334	0	62	0	0	0	0	0	0	0	0
+       179	         8	    457126	    0	      1	                      __vfscanf_internal	/lib/x86_64-linux-gnu/libc.so.6	440368	36612	0	65	0	0	0	0	0	0	0	0
+       180	         8	    457781	    0	      1	                      __vfscanf_internal	/lib/x86_64-linux-gnu/libc.so.6	440368	36612	0	65	0	0	0	0	0	0	0	0
+       181	        11	    359536	    0	      1	             __GI_____strtoul_l_internal	/lib/x86_64-linux-gnu/libc.so.6	359264	1303	0	68	0	0	0	0	0	0	0	0
+       182	        11	    359550	    0	      1	             __GI_____strtoul_l_internal	/lib/x86_64-linux-gnu/libc.so.6	359264	1303	0	68	0	0	0	0	0	0	0	0
+       183	        17	    552744	    0	      1	                   __GI__IO_getline_info	/lib/x86_64-linux-gnu/libc.so.6	552656	409	0	71	0	0	0	0	0	0	0	0
+       184	        17	    552825	    0	      1	                   __GI__IO_getline_info	/lib/x86_64-linux-gnu/libc.so.6	552656	409	0	71	0	0	0	0	0	0	0	0
+       185	        23	    302064	    0	      1	                          __GI___qsort_r	/lib/x86_64-linux-gnu/libc.so.6	301936	1280	0	75	0	0	0	0	0	0	0	0
+       186	        23	    302108	    0	      1	                          __GI___qsort_r	/lib/x86_64-linux-gnu/libc.so.6	301936	1280	0	75	0	0	0	0	0	0	0	0
+       187	        24	    300823	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       188	        24	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       189	        25	    300837	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       190	        25	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       191	        26	    300837	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       192	        26	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       193	        27	    300823	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       194	        27	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       195	        28	    300837	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       196	        28	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       197	        29	    300837	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       198	        29	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       199	        30	    300823	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       200	        30	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       201	        31	    300837	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       202	        31	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       203	        32	    301376	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       204	        32	    301391	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       205	        24	    300837	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       206	        24	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       207	        35	    300837	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       208	        35	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       209	        36	    300823	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       210	        36	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       211	        37	    301376	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       212	        37	    301432	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       213	        43	    440800	    0	      1	                      __vfscanf_internal	/lib/x86_64-linux-gnu/libc.so.6	440368	36612	0	65	0	0	0	0	0	0	0	0
+       214	        43	    440943	    0	      1	                      __vfscanf_internal	/lib/x86_64-linux-gnu/libc.so.6	440368	36612	0	65	0	0	0	0	0	0	0	0
+       215	        47	    552744	    0	      1	                   __GI__IO_getline_info	/lib/x86_64-linux-gnu/libc.so.6	552656	409	0	71	0	0	0	0	0	0	0	0
+       216	        47	    552825	    0	      1	                   __GI__IO_getline_info	/lib/x86_64-linux-gnu/libc.so.6	552656	409	0	71	0	0	0	0	0	0	0	0
+       217	        57	    302064	    0	      1	                          __GI___qsort_r	/lib/x86_64-linux-gnu/libc.so.6	301936	1280	0	75	0	0	0	0	0	0	0	0
+       218	        57	    302108	    0	      1	                          __GI___qsort_r	/lib/x86_64-linux-gnu/libc.so.6	301936	1280	0	75	0	0	0	0	0	0	0	0
+       219	        58	    300823	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       220	        58	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       221	        59	    300823	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       222	        59	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       223	        60	    300837	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       224	        60	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       225	        61	    300837	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       226	        61	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       227	        62	    301376	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       228	        62	    301391	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       229	        58	    300837	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       230	        58	    300864	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       231	        65	    300823	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       232	        65	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       233	        66	    300823	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       234	        66	    300836	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       235	        67	    301376	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       236	        67	    301391	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       237	        58	    301376	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       238	        58	    301407	    0	      1	                          msort_with_tmp	/lib/x86_64-linux-gnu/libc.so.6	300768	729	0	77	0	0	0	0	0	0	0	0
+       239	        83	    623168	    0	      1	                               ___dlopen	/lib/x86_64-linux-gnu/libc.so.6	623088	148	0	83	0	0	0	0	0	0	0	0
+       240	        83	    623198	    0	      1	                               ___dlopen	/lib/x86_64-linux-gnu/libc.so.6	623088	148	0	83	0	0	0	0	0	0	0	0
+       241	       119	   1609104	    0	      1	            __memmove_avx_unaligned_erms	/lib/x86_64-linux-gnu/libc.so.6	1608192	1758	0	87	0	0	0	0	0	0	0	0
+       242	       241	   1609109	    1	      1	[Loop at line 753 in __memmove_avx_unaligned_erms]	/lib/x86_64-linux-gnu/libc.so.6	1609104	202	0	88	0	0	0	0	0	0	0	0
+       243	       119	   1609239	    0	      1	            __memmove_avx_unaligned_erms	/lib/x86_64-linux-gnu/libc.so.6	1608192	1758	0	87	0	0	0	0	0	0	0	0
+       244	       119	   1609255	    0	      1	            __memmove_avx_unaligned_erms	/lib/x86_64-linux-gnu/libc.so.6	1608192	1758	0	87	0	0	0	0	0	0	0	0
+       245	       125	   1609104	    0	      1	            __memmove_avx_unaligned_erms	/lib/x86_64-linux-gnu/libc.so.6	1608192	1758	0	87	0	0	0	0	0	0	0	0
+       246	       245	   1609109	    1	      1	[Loop at line 753 in __memmove_avx_unaligned_erms]	/lib/x86_64-linux-gnu/libc.so.6	1609104	202	0	88	0	0	0	0	0	0	0	0
+       247	       125	   1609224	    0	      1	            __memmove_avx_unaligned_erms	/lib/x86_64-linux-gnu/libc.so.6	1608192	1758	0	87	0	0	0	0	0	0	0	0
+       248	       125	   1609255	    0	      1	            __memmove_avx_unaligned_erms	/lib/x86_64-linux-gnu/libc.so.6	1608192	1758	0	87	0	0	0	0	0	0	0	0
+       249	       133	   1218690	    0	      1	                           __GI___writev	/lib/x86_64-linux-gnu/libc.so.6	1218640	149	0	90	0	0	0	0	0	0	0	0
+       250	       133	   1218715	    0	      1	                           __GI___writev	/lib/x86_64-linux-gnu/libc.so.6	1218640	149	0	90	0	0	0	0	0	0	0	0
+       251	        89	     53532	    0	      1	                                _dl_open	/lib64/ld-linux-x86-64.so.2	53424	1554	0	11	0	0	0	0	0	0	0	0
+       252	        89	     53603	    0	      1	                                _dl_open	/lib64/ld-linux-x86-64.so.2	53424	1554	0	11	0	0	0	0	0	0	0	0
+       253	        91	     52560	    0	      1	                          dl_open_worker	/lib64/ld-linux-x86-64.so.2	52448	253	0	24	0	0	0	0	0	0	0	0
+       254	        91	     52603	    0	      1	                          dl_open_worker	/lib64/ld-linux-x86-64.so.2	52448	253	0	24	0	0	0	0	0	0	0	0
+       255	       101	     22496	    0	      1	                                _dl_init	/lib64/ld-linux-x86-64.so.2	22400	430	0	39	0	0	0	0	0	0	0	0
+       256	       255	     22517	    1	      1	          [Loop at line 120 in _dl_init]	/lib64/ld-linux-x86-64.so.2	22496	74	0	38	0	0	0	0	0	0	0	0
+       257	       255	     22563	    1	      1	          [Loop at line 120 in _dl_init]	/lib64/ld-linux-x86-64.so.2	22496	74	0	38	0	0	0	0	0	0	0	0
+       258	       101	     22563	    0	      1	                                _dl_init	/lib64/ld-linux-x86-64.so.2	22400	430	0	39	0	0	0	0	0	0	0	0
+       259	       102	     22288	    0	      1	                               call_init	/lib64/ld-linux-x86-64.so.2	22128	268	0	41	0	0	0	0	0	0	0	0
+       260	       102	     22302	    0	      1	                               call_init	/lib64/ld-linux-x86-64.so.2	22128	268	0	41	0	0	0	0	0	0	0	0
+       261	        -1	         0	    0	      0	                [Unknown stack frame(s)]	n/a	0	0	0	103	0	0	0	0	0	0	0	0

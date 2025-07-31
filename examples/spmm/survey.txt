@@ -1,0 +1,14 @@
+
+Intel(R) Advisor Command Line Tool
+Copyright (C) 2009-2025 Intel Corporation. All rights reserved.
+Survey Data version="1.1.0"
+
+ID                 Function Call Sites and Loops                  Total Time   Self Time         Type          Why No Vectorization   Vector ISA   Compiler Estimated Gain   Average Trip Count   Min Trip Count   Max Trip Count   Call Count   Transformations     Source Location      Module   
+___________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+ 4   [loop in bsp_convert_matrix at convert_matrix.h:139]             0.010s      0.010s   Inside vectorized                                                                                  1                1                6        28481                     convert_matrix.h:139     spmm   
+ 1   [loop in bsp_mmread_explicit_coordinate]                         0.110s          0s              Scalar                                                                             120029           120029           120029            2                                              spmm   
+ 2   [loop in bsp_mmread_explicit_coordinate]                         0.110s          0s              Scalar                                                                                                                                                                                spmm   
+ 3   [loop in bsp_mmread_explicit_coordinate]                         0.050s          0s              Scalar                                                                              30007            30007            30007            2                                              spmm   
+ 5   [loop in bsp_convert_matrix at convert_matrix.h:135]             0.010s          0s   Vectorized (Body)                                 SSE                                         120029           120029           120029            1                     convert_matrix.h:135     spmm   
+ 6   [loop in experiment_spmm_csr<double, int> at spmm.cpp:84]        0.030s          0s              Scalar                                                                                  3                0               65        31163                              spmm.cpp:84     spmm   
+ 7   [loop in experiment_spmm_csr<double, int> at spmm.cpp:81]        0.030s          0s              Scalar                                                                              31163            31163            31163            1                              spmm.cpp:81     spmm   

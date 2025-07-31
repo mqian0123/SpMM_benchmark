@@ -1,0 +1,12 @@
+# hash file version: 3
+1	52	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	125644	129128,122398		0	235	ae4dc2696d55b7dca63607bcd7bdbc94	0	1	0	0	0
+2	55	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	125644	122398		0	258	ae4dc2696d55b7dca63607bcd7bdbc94	0	1	0	0	0
+3	60	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	122398	122778,123252		0	722	ae4dc2696d55b7dca63607bcd7bdbc94	0	1	0	0	0
+4	79	/opt/intel/oneapi/mkl/2025.2/lib/libmkl_avx2.so.2	31831829			0	1115	aee6f35afaf566fc190aa55d81cd1407	1	1	0	0	0
+5	81	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	121904	129097,121934		0	30	ae4dc2696d55b7dca63607bcd7bdbc94	0	1	0	0	0
+6	82	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	122488	122510		0	22	ae4dc2696d55b7dca63607bcd7bdbc94	1	1	0	0	0
+7	83	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	32896	32989	/home/mqian01/binsparse-reference-c/include/binsparse/convert_matrix.h	119	93	ae4dc2696d55b7dca63607bcd7bdbc94	1	1	0	0	0
+8	86	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	36240	36284	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm.cpp	67	44	ae4dc2696d55b7dca63607bcd7bdbc94	0	1	0	0	0
+9	87	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	36208	36286	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm.cpp	47	78	ae4dc2696d55b7dca63607bcd7bdbc94	0	1	0	0	0
+10	91	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	36816	36448	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm.cpp	89	414	ae4dc2696d55b7dca63607bcd7bdbc94	0	1	0	0	0
+11	92	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	36448	37232	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm.cpp	86	778	ae4dc2696d55b7dca63607bcd7bdbc94	0	1	0	0	0

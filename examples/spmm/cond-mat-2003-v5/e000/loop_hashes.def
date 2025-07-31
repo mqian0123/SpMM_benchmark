@@ -1,0 +1,8 @@
+# hash file version: 3
+1	25	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	124924	128408,121678		0	235	0e9d9635e41e3bf17e5c67c6f01e5329	0	1	0	0	0
+2	27	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	124924	121678		0	258	0e9d9635e41e3bf17e5c67c6f01e5329	0	1	0	0	0
+3	29	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	121678	122058,122532		0	722	0e9d9635e41e3bf17e5c67c6f01e5329	0	1	0	0	0
+4	32	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	33184	33347,33259	/home/mqian01/binsparse-reference-c/include/binsparse/convert_matrix.h	139	75	0e9d9635e41e3bf17e5c67c6f01e5329	0	1	0	0	0
+5	34	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	33104	33320,33347	/home/mqian01/binsparse-reference-c/include/binsparse/convert_matrix.h	135	160	0e9d9635e41e3bf17e5c67c6f01e5329	1	1	0	0	0
+6	36	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	36448	36256	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm.cpp	84	318	0e9d9635e41e3bf17e5c67c6f01e5329	0	1	0	0	0
+7	37	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm	36256	36768	/home/mqian01/SparseRooflineBenchmark/examples/spmm/spmm.cpp	81	509	0e9d9635e41e3bf17e5c67c6f01e5329	0	1	0	0	0
