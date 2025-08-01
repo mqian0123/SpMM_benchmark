@@ -117,7 +117,7 @@ void BiCsb<NT, IT>::Init(int workers, IT forcelogbeta)
 			rowhighbits = rowbits-rowlowbits;
 	                colhighbits = colbits-collowbits;
 		}
-		cout << "Beta chosen to be "<< (lowrowmask+1) << endl;
+		// cout << "Beta chosen to be "<< (lowrowmask+1) << endl;
 	}
 	highrowmask = ((roundrowup - 1) ^ lowrowmask);
 	highcolmask = ((roundcolup - 1) ^ lowcolmask);
@@ -617,248 +617,171 @@ void BiCsb<bool, IT>::SortBlocks(pair<IT, pair<IT,IT> > * pairarray)
 	assert(cnz == nz);
 }
 
-/**
-  * @param[IT**] chunks {an array of pointers, ith entry is an address pointing to the top array }
-  * 	That address belongs to the the first block in that chunk
-  * 	chunks[i] is valid for i = {start,start+1,...,end} 
-  *	chunks[0] = btop
-  **/ 
+// ==========================================================
+// BMult: Generic numeric version
+// ==========================================================
 template <class NT, class IT>
 template <typename SR, typename RHS, typename LHS>
-void BiCsb<NT, IT>::BMult(IT** chunks, IT start, IT end, const RHS * __restrict x, LHS * __restrict y, IT ysize) const
+void BiCsb<NT, IT>::BMult(
+    IT** chunks, IT start, IT end,
+    const RHS * __restrict x,
+    LHS * __restrict y, IT ysize) const
 {
-	assert(end-start > 0);	// there should be at least one chunk
-	if (end-start == 1) 	// single chunk
-	{
-		if((chunks[end] - chunks[start]) == 1)	// chunk consists of a single (normally dense) block 
-		{
-			IT chi = ( (chunks[start] - chunks[0])  << collowbits);
+    assert(end - start > 0);
 
-			// m-chi > lowcolmask for all blocks except the last skinny tall one.
-			// if the last one is regular too, then it has m-chi = lowcolmask+1
-			if(ysize == (lowrowmask+1) && (m-chi) > lowcolmask )	// parallelize if it is a regular/complete block 	
-			{
-				const RHS * __restrict subx = &x[chi];
-				BlockPar<SR>( *(chunks[start]) , *(chunks[end]), subx, y, 0, blcrange, BREAKEVEN * ysize);
-			}
-			else 		// otherwise block parallelization will fail 
-			{
-				SubSpMV<SR>(chunks[0], chunks[start]-chunks[0], chunks[end]-chunks[0], x, y);
-			}
-		}
-		else 	// a number of sparse blocks with a total of at most O(\beta) nonzeros
-		{
-			SubSpMV<SR>(chunks[0], chunks[start]-chunks[0], chunks[end]-chunks[0], x, y);
-		}  
-	}
-	else
-	{
-		// divide chunks into half 
-		IT mid = (start+end)/2;
+    #pragma omp parallel for schedule(dynamic)
+    for (IT ci = start; ci < end; ++ci)
+    {
+        if ((chunks[ci + 1] - chunks[ci]) == 1) // single dense block
+        {
+            IT chi = ((chunks[ci] - chunks[0]) << collowbits);
 
-		cilk_spawn BMult<SR>(chunks, start, mid, x, y, ysize);
-		if(SYNCHED)
-		{ 
-			BMult<SR>(chunks, mid, end, x, y, ysize);
-		}
-		else
-		{
-			LHS * temp = new LHS[ysize]();	
-			// not the empty set of parantheses as the initializer, therefore
-			// even if LHS is a built-in type (such as double,int) it will be default-constructed 
-			// The C++ standard says that: A default constructed POD type is zero-initialized,
-			// for non-POD types (such as std::array), the caller should make sure default constructs to zero
-
-			BMult<SR>(chunks, mid, end, x, temp, ysize);
-			cilk_sync;
-			
-			#pragma simd
-			for(IT i=0; i<ysize; ++i)
-				SR::axpy(temp[i], y[i]);
-
-			delete [] temp;
-		}
-	}
+            if (ysize == (lowrowmask + 1) && (m - chi) > lowcolmask)
+            {
+                const RHS * __restrict subx = &x[chi];
+                BlockPar<SR>(*(chunks[ci]), *(chunks[ci + 1]),
+                             subx, y, 0, blcrange, BREAKEVEN * ysize);
+            }
+            else
+            {
+                SubSpMV<SR>(chunks[0],
+                            chunks[ci] - chunks[0],
+                            chunks[ci + 1] - chunks[0],
+                            x, y);
+            }
+        }
+        else // multiple sparse blocks in chunk
+        {
+            SubSpMV<SR>(chunks[0],
+                        chunks[ci] - chunks[0],
+                        chunks[ci + 1] - chunks[0],
+                        x, y);
+        }
+    }
 }
 
-// partial template specialization for NT=bool
+// ==========================================================
+// BMult: Boolean specialization
+// ==========================================================
 template <class IT>
 template <typename SR, typename RHS, typename LHS>
-void BiCsb<bool, IT>::BMult(IT** chunks, IT start, IT end, const RHS * __restrict x, LHS * __restrict y, IT ysize) const
+void BiCsb<bool, IT>::BMult(
+    IT** chunks, IT start, IT end,
+    const RHS * __restrict x,
+    LHS * __restrict y, IT ysize) const
 {
-	assert(end-start > 0);	// there should be at least one chunk
-	if (end-start == 1) 	// single chunk
-	{
-		if((chunks[end] - chunks[start]) == 1)	// chunk consists of a single (normally dense) block 
-		{
-			IT chi = ( (chunks[start] - chunks[0])  << collowbits);
+    assert(end - start > 0);
 
-			// m-chi > lowcolmask for all blocks except the last skinny tall one.
-			// if the last one is regular too, then it has m-chi = lowcolmask+1
-			if(ysize == (lowrowmask+1) && (m-chi) > lowcolmask )	// parallelize if it is a regular/complete block 	
-			{
-				const RHS * __restrict subx = &x[chi];
-				BlockPar<SR>( *(chunks[start]) , *(chunks[end]), subx, y, 0, blcrange, BREAKEVEN * ysize);
-			}
-			else 		// otherwise block parallelization will fail 
-			{
-				SubSpMV<SR>(chunks[0], chunks[start]-chunks[0], chunks[end]-chunks[0], x, y);
-			}
-		}
-		else 	// a number of sparse blocks with a total of at most O(\beta) nonzeros
-		{
-			SubSpMV<SR>(chunks[0], chunks[start]-chunks[0], chunks[end]-chunks[0], x, y);
-		}  
-	}
-	else
-	{
-		// divide chunks into half 
-		IT mid = (start+end)/2;
+    #pragma omp parallel for schedule(dynamic)
+    for (IT ci = start; ci < end; ++ci)
+    {
+        if ((chunks[ci + 1] - chunks[ci]) == 1) // single dense block
+        {
+            IT chi = ((chunks[ci] - chunks[0]) << collowbits);
 
-		cilk_spawn BMult<SR>(chunks, start, mid, x, y, ysize);
-		if(SYNCHED)
-		{ 
-			BMult<SR>(chunks, mid, end, x, y, ysize);
-		}
-		else
-		{
-			LHS * temp = new LHS[ysize]();	
-			// not the empty set of parantheses as the initializer, therefore
-			// even if LHS is a built-in type (such as double,int) it will be default-constructed 
-			// The C++ standard says that: A default constructed POD type is zero-initialized,
-			// for non-POD types (such as std::array), the caller should make sure default constructs to zero
-
-			BMult<SR>(chunks, mid, end, x, temp, ysize);
-			cilk_sync;
-			
-			#pragma simd
-			for(IT i=0; i<ysize; ++i)
-				SR::axpy(temp[i], y[i]);					
-
-			delete [] temp;
-		}
-	}
+            if (ysize == (lowrowmask + 1) && (m - chi) > lowcolmask)
+            {
+                const RHS * __restrict subx = &x[chi];
+                BlockPar<SR>(*(chunks[ci]), *(chunks[ci + 1]),
+                             subx, y, 0, blcrange, BREAKEVEN * ysize);
+            }
+            else
+            {
+                SubSpMV<SR>(chunks[0],
+                            chunks[ci] - chunks[0],
+                            chunks[ci + 1] - chunks[0],
+                            x, y);
+            }
+        }
+        else // multiple sparse blocks in chunk
+        {
+            SubSpMV<SR>(chunks[0],
+                        chunks[ci] - chunks[0],
+                        chunks[ci + 1] - chunks[0],
+                        x, y);
+        }
+    }
 }
 
-/**
- * Improved non-zero dividing version of BTransMult (as opposed to spatially dividing)
- * @warning {difference from BMult is that while the top array pointed by chunks is still contiguous... 
- *              the nonzeros pointed by two consecutive top locations - top[i] and top[i+1] are NOT}
- * @param[vector< vector< pair<IT,IT> > * >] chunks {a vector of pointers to vectors of pairs}
- * 	Each vector of pairs is a chunk and each pair is a block within that chunk
- * 	chunks[i] is valid for i = {start,start+1,...,end-1}
- **/
+// ==========================================================
+// BTransMult: Generic numeric version
+// ==========================================================
 template <class NT, class IT>
 template <typename SR, typename RHS, typename LHS>
-void BiCsb<NT, IT>::BTransMult(vector< vector< tuple<IT,IT,IT> > * > & chunks, IT start, IT end, const RHS * __restrict x, LHS * __restrict y, IT ysize) const
+void BiCsb<NT, IT>::BTransMult(
+    std::vector<std::vector<std::tuple<IT, IT, IT>>*> &chunks,
+    IT start, IT end,
+    const RHS * __restrict x,
+    LHS * __restrict y, IT ysize) const
 {
-#ifdef STATS
-	blockparcalls += 1;
-#endif
-    	assert(end-start > 0);	// there should be at least one chunk
-	if (end-start == 1) 	// single chunk (note that single chunk does not mean single block)
-	{
-		if(chunks[start]->size() == 1)	// chunk consists of a single (normally dense) block
-		{
-            		// get the block row id higher order bits to index x (because this is A'x)
-            		auto block = chunks[start]->front();    // get the tuple representing this compressed sparse block
-			IT chi = ( get<2>(block) << rowlowbits);
-            	
-			// m-chi > lowrowmask for all blocks except the last skinny tall one.
-			// if the last one is regular too, then it has m-chi = lowcolmask+1
-			// parallelize if it is a regular/complete block (and it it is worth it)
+    assert(end - start > 0);
 
-			if(ysize == (lowrowmask+1) && (m-chi) > lowrowmask && (get<1>(block)-get<0>(block)) > BREAKEVEN * ysize)	
-			{
-				const RHS * __restrict subx = &x[chi];
-				BlockParT<SR>( get<0>(block) , get<1>(block), subx, y, 0, blcrange, BREAKEVEN * ysize);
-			}
-			else 		// otherwise block parallelization will fail 
-			{
-				SubSpMVTrans<SR>(*(chunks[start]), x, y);
-			}
-		}
-		else 	// a number of sparse blocks with a total of at most O(\beta) nonzeros
-		{
-			SubSpMVTrans<SR>(*(chunks[start]), x, y);
-		}  
-	}
-	else    // multiple chunks
-	{
-		IT mid = (start+end)/2;
-		cilk_spawn BTransMult<SR>(chunks, start, mid, x, y, ysize);
-		if(SYNCHED)
-		{
-			BTransMult<SR>(chunks, mid, end, x, y, ysize);
-		}
-		else
-		{
-			LHS * temp = new LHS[ysize]();
-			BTransMult<SR>(chunks, mid, end, x, temp, ysize);
-			cilk_sync;
-			
-			#pragma simd
-			for(IT i=0; i<ysize; ++i)
-				SR::axpy(temp[i], y[i]);					
+    #pragma omp parallel for schedule(dynamic)
+    for (IT ci = start; ci < end; ++ci)
+    {
+        if (chunks[ci]->size() == 1) // single dense block
+        {
+            auto block = chunks[ci]->front();
+            IT chi = (get<2>(block) << rowlowbits);
 
-			delete [] temp;
-		}
-	}
+            if (ysize == (lowrowmask + 1) && (m - chi) > lowrowmask &&
+                (get<1>(block) - get<0>(block)) > BREAKEVEN * ysize)
+            {
+                const RHS * __restrict subx = &x[chi];
+                BlockParT<SR>(get<0>(block), get<1>(block),
+                              subx, y, 0, blcrange, BREAKEVEN * ysize);
+            }
+            else
+            {
+                SubSpMVTrans<SR>(*(chunks[ci]), x, y);
+            }
+        }
+        else // multiple sparse blocks in chunk
+        {
+            SubSpMVTrans<SR>(*(chunks[ci]), x, y);
+        }
+    }
 }
 
-// Partial template specialization on NT=bool
+// ==========================================================
+// BTransMult: Boolean specialization
+// ==========================================================
 template <class IT>
 template <typename SR, typename RHS, typename LHS>
-void BiCsb<bool, IT>::BTransMult(vector< vector< tuple<IT,IT,IT> > * > & chunks, IT start, IT end, const RHS * __restrict x, LHS * __restrict y, IT ysize) const
+void BiCsb<bool, IT>::BTransMult(
+    std::vector<std::vector<std::tuple<IT, IT, IT>>*> &chunks,
+    IT start, IT end,
+    const RHS * __restrict x,
+    LHS * __restrict y, IT ysize) const
 {
-	assert(end-start > 0);	// there should be at least one chunk
-	if (end-start == 1) 	// single chunk (note that single chunk does not mean single block)
-	{
-		if(chunks[start]->size() == 1)	// chunk consists of a single (normally dense) block
-		{
-            // get the block row id higher order bits to index x (because this is A'x)
-            auto block = chunks[start]->front();    // get the tuple representing this compressed sparse block
-			IT chi = ( get<2>(block) << rowlowbits);
-            
-			// m-chi > lowrowmask for all blocks except the last skinny tall one.
-			// if the last one is regular too, then it has m-chi = lowcolmask+1
-			if(ysize == (lowrowmask+1) && (m-chi) > lowrowmask )	// parallelize if it is a regular/complete block
-			{
-				const RHS * __restrict subx = &x[chi];
-				BlockParT<SR>( get<0>(block) , get<1>(block), subx, y, 0, blcrange, BREAKEVEN * ysize);
-			}
-			else 		// otherwise block parallelization will fail 
-			{
-				SubSpMVTrans<SR>(*(chunks[start]), x, y);
-			}
-		}
-		else 	// a number of sparse blocks with a total of at most O(\beta) nonzeros
-		{
-			SubSpMVTrans<SR>(*(chunks[start]), x, y);
-		}
-	}
-	else    // multiple chunks
-	{
-		IT mid = (start+end)/2;
-		cilk_spawn BTransMult<SR>(chunks, start, mid, x, y, ysize);
-		if(SYNCHED)
-		{
-			BTransMult<SR>(chunks, mid, end, x, y, ysize);
-		}
-		else
-		{
-			LHS * temp = new LHS[ysize]();
-			BTransMult<SR>(chunks, mid, end, x, temp, ysize);
-			cilk_sync;
-			
-			#pragma simd
-			for(IT i=0; i<ysize; ++i)
-				SR::axpy(temp[i], y[i]);
-            
-			delete [] temp;
-		}
-	}
+    assert(end - start > 0);
+
+    #pragma omp parallel for schedule(dynamic)
+    for (IT ci = start; ci < end; ++ci)
+    {
+        if (chunks[ci]->size() == 1) // single dense block
+        {
+            auto block = chunks[ci]->front();
+            IT chi = (get<2>(block) << rowlowbits);
+
+            if (ysize == (lowrowmask + 1) && (m - chi) > lowrowmask)
+            {
+                const RHS * __restrict subx = &x[chi];
+                BlockParT<SR>(get<0>(block), get<1>(block),
+                              subx, y, 0, blcrange, BREAKEVEN * ysize);
+            }
+            else
+            {
+                SubSpMVTrans<SR>(*(chunks[ci]), x, y);
+            }
+        }
+        else // multiple sparse blocks in chunk
+        {
+            SubSpMVTrans<SR>(*(chunks[ci]), x, y);
+        }
+    }
 }
+
 
 // double* restrict a; --> No aliases for a[0], a[1], ...
 // bstart/bend: block start/end index (to the top array)
@@ -1054,285 +977,96 @@ void BiCsb<bool, IT>::SubSpMVTrans(IT col, IT rowstart, IT rowend, const RHS * _
 	}	
 }
 
-// Parallelize the block itself (A*x version)
-// start/end: element start/end positions (indices to the bot array)
-// bot[start...end] always fall in the same block
-// PRECONDITION: rangeend-rangebeg is a power of two 
-// TODO: we rely on the particular implementation of lower_bound for correctness, which is dangerous !
-//		 what if lhs (instead of rhs) parameter to the comparison object is the splitter?
+// -----------------------------------------------------------------------------
+// Generic numeric BlockPar (A*x version)
+// -----------------------------------------------------------------------------
 template <class NT, class IT>
 template <typename SR, typename RHS, typename LHS>
-void BiCsb<NT, IT>::BlockPar(IT start, IT end, const RHS * __restrict subx, LHS * __restrict suby, 
-							   IT rangebeg, IT rangeend, IT cutoff) const
+void BiCsb<NT, IT>::BlockPar(
+    IT start, IT end,
+    const RHS * __restrict subx,
+    LHS * __restrict suby,
+    IT /*rangebeg*/, IT /*rangeend*/, IT /*cutoff*/) const
 {
-	assert(IsPower2(rangeend-rangebeg));
-	if(end - start < cutoff)
-	{
-		IT * __restrict r_bot = bot;
-		NT * __restrict r_num = num;
-		for (IT k = start ; k < end ; ++k)	
-		{
-			IT rli = ((r_bot[k] >> collowbits) & lowrowmask);
-			IT cli = (r_bot[k] & lowcolmask);
-			SR::axpy(r_num[k], subx[cli], suby[rli]);	// suby [rli] += r_num[k] * subx [cli]  where subx and suby are vectors.
-		}
-	}
-	else
-	{
-		// Lower_bound is a version of binary search: it attempts to find the element value in an ordered range [first, last) 
-		// Specifically, it returns the first position where value could be inserted without violating the ordering
-		IT halfrange = (rangebeg+rangeend)/2;
-		IT qrt1range = (rangebeg+halfrange)/2;
-		IT qrt3range = (halfrange+rangeend)/2;
+    IT * __restrict r_bot = bot;
+    NT * __restrict r_num = num;
 
-		IT * mid = std::lower_bound(&bot[start], &bot[end], halfrange, mortoncmp);
-		IT * left = std::lower_bound(&bot[start], mid, qrt1range, mortoncmp);
-		IT * right = std::lower_bound(mid, &bot[end], qrt3range, mortoncmp);
-
-		/* -------
-		   | 0 2 |
-		   | 1 3 |
-		   ------- */
-		// subtracting two pointers pointing to the same array gives you the # of elements separating them
-		// we're *sure* that the differences are 1) non-negative, 2) small enough to be indexed by an IT
-		IT size0 = static_cast<IT> (left - &bot[start]);
-		IT size1 = static_cast<IT> (mid - left);
-		IT size2 = static_cast<IT> (right - mid);
-		IT size3 = static_cast<IT> (&bot[end] - right);
-
-		IT ncutoff = std::max<IT>(cutoff/2, MINNNZTOPAR);
-	    
-		// We can choose to perform [0,3] in parallel and then [1,2] in parallel
-		// or perform [0,1] in parallel and then [2,3] in parallel
-		// Decision is based on the balance, i.e. we pick the more balanced parallelism
-		if( ( absdiff(size0,size3) + absdiff(size1,size2) ) < ( absdiff(size0,size1) + absdiff(size2,size3) ) )
-		{	
-			cilk_spawn BlockPar<SR>(start, start+size0, subx, suby, rangebeg, qrt1range, ncutoff);	// multiply subblock_0
-			BlockPar<SR>(end-size3, end, subx, suby, qrt3range, rangeend, ncutoff);			// multiply subblock_3
-			cilk_sync;
-
-			cilk_spawn BlockPar<SR>(start+size0, start+size0+size1, subx, suby, qrt1range, halfrange, ncutoff);	// multiply subblock_1
-			BlockPar<SR>(start+size0+size1, end-size3, subx, suby, halfrange, qrt3range, ncutoff);		// multiply subblock_2
-			cilk_sync;
-		}
-		else
-		{
-			cilk_spawn BlockPar<SR>(start, start+size0, subx, suby, rangebeg, qrt1range, ncutoff);	// multiply subblock_0
-			BlockPar<SR>(start+size0, start+size0+size1, subx, suby, qrt1range, halfrange, ncutoff);	// multiply subblock_1
-			cilk_sync;
-
-			cilk_spawn BlockPar<SR>(start+size0+size1, end-size3, subx, suby, halfrange, qrt3range, ncutoff);	// multiply subblock_2
-			BlockPar<SR>(end-size3, end, subx, suby, qrt3range, rangeend, ncutoff);				// multiply subblock_3
-			cilk_sync;
-		}
-	}
+    #pragma omp parallel for schedule(static)
+    for (IT k = start; k < end; ++k)
+    {
+        IT rli = ((r_bot[k] >> collowbits) & lowrowmask);
+        IT cli = (r_bot[k] & lowcolmask);
+        SR::axpy(r_num[k], subx[cli], suby[rli]);
+    }
 }
 
-
+// -----------------------------------------------------------------------------
+// Boolean-specialized BlockPar (A*x version)
+// -----------------------------------------------------------------------------
 template <class IT>
 template <typename SR, typename RHS, typename LHS>
-void BiCsb<bool, IT>::BlockPar(IT start, IT end, const RHS * __restrict subx, LHS * __restrict suby, 
-							   IT rangebeg, IT rangeend, IT cutoff) const
+void BiCsb<bool, IT>::BlockPar(
+    IT start, IT end,
+    const RHS * __restrict subx,
+    LHS * __restrict suby,
+    IT /*rangebeg*/, IT /*rangeend*/, IT /*cutoff*/) const
 {
-	assert(IsPower2(rangeend-rangebeg));
-	if(end - start < cutoff)
-	{
-		IT * __restrict r_bot = bot;
-		for (IT k = start ; k < end ; ++k)	
-		{
-			IT rli = ((r_bot[k] >> collowbits) & lowrowmask);
-			IT cli = (r_bot[k] & lowcolmask);
-			SR::axpy(subx[cli], suby[rli]);		// suby [rli] += subx [cli]  where subx and suby are vectors.
-		}
-	}
-	else
-	{
-		// Lower_bound is a version of binary search: it attempts to find the element value in an ordered range [first, last) 
-		// Specifically, it returns the first position where value could be inserted without violating the ordering
-		IT halfrange = (rangebeg+rangeend)/2;
-		IT qrt1range = (rangebeg+halfrange)/2;
-		IT qrt3range = (halfrange+rangeend)/2;
+    IT * __restrict r_bot = bot;
 
-		IT * mid = std::lower_bound(&bot[start], &bot[end], halfrange, mortoncmp);
-		IT * left = std::lower_bound(&bot[start], mid, qrt1range, mortoncmp);
-		IT * right = std::lower_bound(mid, &bot[end], qrt3range, mortoncmp);
-
-		/* -------
-		   | 0 2 |
-		   | 1 3 |
-		   ------- */
-		// subtracting two pointers pointing to the same array gives you the # of elements separating them
-		// we're *sure* that the differences are 1) non-negative, 2) small enough to be indexed by an IT
-		IT size0 = static_cast<IT> (left - &bot[start]);
-		IT size1 = static_cast<IT> (mid - left);
-		IT size2 = static_cast<IT> (right - mid);
-		IT size3 = static_cast<IT> (&bot[end] - right);
-
-		IT ncutoff = std::max<IT>(cutoff/2, MINNNZTOPAR);
-	    
-		// We can choose to perform [0,3] in parallel and then [1,2] in parallel
-		// or perform [0,1] in parallel and then [2,3] in parallel
-		// Decision is based on the balance, i.e. we pick the more balanced parallelism
-		if( ( absdiff(size0,size3) + absdiff(size1,size2) ) < ( absdiff(size0,size1) + absdiff(size2,size3) ) )
-		{	
-			cilk_spawn BlockPar<SR>(start, start+size0, subx, suby, rangebeg, qrt1range, ncutoff);	// multiply subblock_0
-			BlockPar<SR>(end-size3, end, subx, suby, qrt3range, rangeend, ncutoff);			// multiply subblock_3
-			cilk_sync;
-
-			cilk_spawn BlockPar<SR>(start+size0, start+size0+size1, subx, suby, qrt1range, halfrange, ncutoff);	// multiply subblock_1
-			BlockPar<SR>(start+size0+size1, end-size3, subx, suby, halfrange, qrt3range, ncutoff);		// multiply subblock_2
-			cilk_sync;
-		}
-		else
-		{
-			cilk_spawn BlockPar<SR>(start, start+size0, subx, suby, rangebeg, qrt1range, ncutoff);	// multiply subblock_0
-			BlockPar<SR>(start+size0, start+size0+size1, subx, suby, qrt1range, halfrange, ncutoff);	// multiply subblock_1
-			cilk_sync;
-
-			cilk_spawn BlockPar<SR>(start+size0+size1, end-size3, subx, suby, halfrange, qrt3range, ncutoff);	// multiply subblock_2
-			BlockPar<SR>(end-size3, end, subx, suby, qrt3range, rangeend, ncutoff);				// multiply subblock_3
-			cilk_sync;
-		}
-	}
+    #pragma omp parallel for schedule(static)
+    for (IT k = start; k < end; ++k)
+    {
+        IT rli = ((r_bot[k] >> collowbits) & lowrowmask);
+        IT cli = (r_bot[k] & lowcolmask);
+        SR::axpy(subx[cli], suby[rli]);
+    }
 }
 
-// Parallelize the block itself (A'*x version)
-// start/end: element start/end positions (indices to the bot array)
-// bot[start...end] always fall in the same block
+// -----------------------------------------------------------------------------
+// Generic numeric BlockParT (A'*x version)
+// -----------------------------------------------------------------------------
 template <class NT, class IT>
 template <typename SR, typename RHS, typename LHS>
-void BiCsb<NT, IT>::BlockParT(IT start, IT end, const RHS * __restrict subx, LHS * __restrict suby, 
-								   IT rangebeg, IT rangeend, IT cutoff) const
+void BiCsb<NT, IT>::BlockParT(
+    IT start, IT end,
+    const RHS * __restrict subx,
+    LHS * __restrict suby,
+    IT /*rangebeg*/, IT /*rangeend*/, IT /*cutoff*/) const
 {
-	if(end - start < cutoff)
-	{
-		IT * __restrict r_bot = bot;
-		NT * __restrict r_num = num;
-		for (IT k = start ; k < end ; ++k)	
-		{
-			// Note the swap in cli/rli
-			IT cli = ((r_bot[k] >> collowbits) & lowrowmask);
-			IT rli = (r_bot[k] & lowcolmask);
-			SR::axpy(r_num[k], subx[cli], suby[rli]);	// suby [rli] += r_num[k] * subx [cli]  where subx and suby are vectors.
-		}
-	}
-	else
-	{
-		IT halfrange = (rangebeg+rangeend)/2;
-		IT qrt1range = (rangebeg+halfrange)/2;
-		IT qrt3range = (halfrange+rangeend)/2;
+    IT * __restrict r_bot = bot;
+    NT * __restrict r_num = num;
 
-		// Lower_bound is a version of binary search: it attempts to find the element value in an ordered range [first, last) 
-		// Specifically, it returns the first position where value could be inserted without violating the ordering
-		IT * mid = std::lower_bound(&bot[start], &bot[end], halfrange, mortoncmp);
-		IT * left = std::lower_bound(&bot[start], mid, qrt1range, mortoncmp);
-		IT * right = std::lower_bound(mid, &bot[end], qrt3range, mortoncmp);
-
-		/* -------
-		   | 0 1 |
-		   | 2 3 |
-		   ------- */
-		// subtracting two pointers pointing to the same array gives you the # of elements separating them
-		// we're *sure* that the differences are 1) non-negative, 2) small enough to be indexed by an IT
-		IT size0 = static_cast<IT> (left - &bot[start]);
-		IT size1 = static_cast<IT> (mid - left);
-		IT size2 = static_cast<IT> (right - mid);
-		IT size3 = static_cast<IT> (&bot[end] - right);
-
-		IT ncutoff = std::max<IT>(cutoff/2, MINNNZTOPAR);
-	    
-		// We can choose to perform [0,3] in parallel and then [1,2] in parallel
-		// or perform [0,2] in parallel and then [1,3] in parallel
-		// Decision is based on the balance, i.e. we pick the more balanced parallelism
-		if( ( absdiff(size0,size3) + absdiff(size1,size2) ) < ( absdiff(size0,size2) + absdiff(size1,size3) ) )
-		{	
-			cilk_spawn BlockParT<SR>(start, start+size0, subx, suby, rangebeg, qrt1range, ncutoff);	// multiply subblock_0
-			BlockParT<SR>(end-size3, end, subx, suby, qrt3range, rangeend, ncutoff);			// multiply subblock_3
-			cilk_sync;
-
-			cilk_spawn BlockParT<SR>(start+size0, start+size0+size1, subx, suby, qrt1range, halfrange, ncutoff);// multiply subblock_1
-			BlockParT<SR>(start+size0+size1, end-size3, subx, suby, halfrange, qrt3range, ncutoff);		// multiply subblock_2
-			cilk_sync;
-		}
-		else
-		{
-			cilk_spawn BlockParT<SR>(start, start+size0, subx, suby, rangebeg, qrt1range, ncutoff);	// multiply subblock_0
-			BlockParT<SR>(start+size0+size1, end-size3, subx, suby, halfrange, qrt3range, ncutoff);	// multiply subblock_2
-			cilk_sync;
-
-			cilk_spawn BlockParT<SR>(start+size0, start+size0+size1, subx, suby, qrt1range, halfrange, ncutoff);// multiply subblock_1
-			BlockParT<SR>(end-size3, end, subx, suby, qrt3range, rangeend, ncutoff);				// multiply subblock_3
-			cilk_sync;
-		}
-	}
+    #pragma omp parallel for schedule(static)
+    for (IT k = start; k < end; ++k)
+    {
+        // Note the swap in cli/rli for transpose
+        IT cli = ((r_bot[k] >> collowbits) & lowrowmask);
+        IT rli = (r_bot[k] & lowcolmask);
+        SR::axpy(r_num[k], subx[cli], suby[rli]);
+    }
 }
 
-
+// -----------------------------------------------------------------------------
+// Boolean-specialized BlockParT (A'*x version)
+// -----------------------------------------------------------------------------
 template <class IT>
 template <typename SR, typename RHS, typename LHS>
-void BiCsb<bool, IT>::BlockParT(IT start, IT end, const RHS * __restrict subx, LHS * __restrict suby, 
-								   IT rangebeg, IT rangeend, IT cutoff) const
+void BiCsb<bool, IT>::BlockParT(
+    IT start, IT end,
+    const RHS * __restrict subx,
+    LHS * __restrict suby,
+    IT /*rangebeg*/, IT /*rangeend*/, IT /*cutoff*/) const
 {
-	if(end - start < cutoff)
-	{
-		IT * __restrict r_bot = bot;
-		for (IT k = start ; k < end ; ++k)	
-		{
-			// Note the swap in cli/rli
-			IT cli = ((r_bot[k] >> collowbits) & lowrowmask);
-			IT rli = (r_bot[k] & lowcolmask);
-			SR::axpy(subx[cli], suby[rli]);		// suby [rli] += subx [cli]  where subx and suby are vectors.
-		}
-	}
-	else
-	{
-		IT halfrange = (rangebeg+rangeend)/2;
-		IT qrt1range = (rangebeg+halfrange)/2;
-		IT qrt3range = (halfrange+rangeend)/2;
+    IT * __restrict r_bot = bot;
 
-		// Lower_bound is a version of binary search: it attempts to find the element value in an ordered range [first, last) 
-		// Specifically, it returns the first position where value could be inserted without violating the ordering
-		IT * mid = std::lower_bound(&bot[start], &bot[end], halfrange, mortoncmp);
-		IT * left = std::lower_bound(&bot[start], mid, qrt1range, mortoncmp);
-		IT * right = std::lower_bound(mid, &bot[end], qrt3range, mortoncmp);
-
-		/* -------
-		   | 0 1 |
-		   | 2 3 |
-		   ------- */
-		// subtracting two pointers pointing to the same array gives you the # of elements separating them
-		// we're *sure* that the differences are 1) non-negative, 2) small enough to be indexed by an IT
-		IT size0 = static_cast<IT> (left - &bot[start]);
-		IT size1 = static_cast<IT> (mid - left);
-		IT size2 = static_cast<IT> (right - mid);
-		IT size3 = static_cast<IT> (&bot[end] - right);
-
-		IT ncutoff = std::max<IT>(cutoff/2, MINNNZTOPAR);
-	    
-		// We can choose to perform [0,3] in parallel and then [1,2] in parallel
-		// or perform [0,2] in parallel and then [1,3] in parallel
-		// Decision is based on the balance, i.e. we pick the more balanced parallelism
-		if( ( absdiff(size0,size3) + absdiff(size1,size2) ) < ( absdiff(size0,size2) + absdiff(size1,size3) ) )
-		{	
-			cilk_spawn BlockParT<SR>(start, start+size0, subx, suby, rangebeg, qrt1range, ncutoff);	// multiply subblock_0
-			BlockParT<SR>(end-size3, end, subx, suby, qrt3range, rangeend, ncutoff);			// multiply subblock_3
-			cilk_sync;
-
-			cilk_spawn BlockParT<SR>(start+size0, start+size0+size1, subx, suby, qrt1range, halfrange, ncutoff);// multiply subblock_1
-			BlockParT<SR>(start+size0+size1, end-size3, subx, suby, halfrange, qrt3range, ncutoff);		// multiply subblock_2
-			cilk_sync;
-		}
-		else
-		{
-			cilk_spawn BlockParT<SR>(start, start+size0, subx, suby, rangebeg, qrt1range, ncutoff);	// multiply subblock_0
-			BlockParT<SR>(start+size0+size1, end-size3, subx, suby, halfrange, qrt3range, ncutoff);	// multiply subblock_2
-			cilk_sync;
-
-			cilk_spawn BlockParT<SR>(start+size0, start+size0+size1, subx, suby, qrt1range, halfrange, ncutoff);// multiply subblock_1
-			BlockParT<SR>(end-size3, end, subx, suby, qrt3range, rangeend, ncutoff);				// multiply subblock_3
-			cilk_sync;
-		}
-	}
+    #pragma omp parallel for schedule(static)
+    for (IT k = start; k < end; ++k)
+    {
+        // Note the swap in cli/rli for transpose
+        IT cli = ((r_bot[k] >> collowbits) & lowrowmask);
+        IT rli = (r_bot[k] & lowcolmask);
+        SR::axpy(subx[cli], suby[rli]);
+    }
 }
 
 // Print stats to an ofstream object
@@ -1350,7 +1084,6 @@ ofstream & BiCsb<NT, IT>::PrintStats(ofstream & outfile) const
 	outfile << "## Number of real blocks is "<< ntop << endl;
 	outfile << "## Row imbalance is " << RowImbalance(*this) << endl;
 	outfile << "## Col imbalance is " << ColImbalance(*this) << endl;
-	outfile << "## Block parallel calls is " << blockparcalls.get_value() << endl;
 	
 	std::vector<int> blocksizes(ntop);
 	for(IT i=0; i<nbr; ++i)
