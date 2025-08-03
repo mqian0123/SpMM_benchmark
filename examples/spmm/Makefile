@@ -22,7 +22,8 @@ INCLUDES  = -I/home/mqian01/binsparse-reference-c/include \
 # Library paths
 LDFLAGS   = -L/home/mqian01/binsparse-reference-c/build \
             -Wl,-rpath,/home/mqian01/binsparse-reference-c/build \
-            -L$(MKLROOT)/lib/intel64
+            -L$(MKLROOT)/lib/intel64 \
+            -L$(HOME)/intel/oneapi/advisor/2025.2/sdk/lib64
 
 # Libraries
 LIBS      = -lbinsparse-rc -lhdf5_serial -lcjson \
@@ -31,7 +32,8 @@ LIBS      = -lbinsparse-rc -lhdf5_serial -lcjson \
                 -lmkl_sequential \
                 -lmkl_core \
             -Wl,--end-group \
-            -lpthread -lm -ldl
+            -lpthread -lm -ldl \
+            -littnotify
 
 $(TARGET): $(SRC)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LDFLAGS) -o $@ $^ $(LIBS)

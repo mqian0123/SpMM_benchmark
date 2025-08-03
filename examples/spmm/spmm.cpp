@@ -7,8 +7,9 @@
 #include <chrono>
 #include <cmath>
 
-#define RHSDIM 16
+#define RHSDIM 50
 #define ALIGN 32
+#define REPEAT 100
 
 #include "utility.h"
 #include "triple.h"
@@ -17,6 +18,7 @@
 #include "Semirings.h"
 #include "aligned.h"
 #include "mkl_spblas.h"
+#include "ittnotify.h"
 #include <advisor-annotate.h> // intel advisor
 
 
@@ -45,8 +47,10 @@ bool compare_dense_matrices(const T* C1, const T* C2, size_t rows, size_t cols, 
 
 // compile using ./spmm -i data/A.mtx -o results
 // input includes the specific .mtx file, output is just the folder
+static __itt_domain* roofline_domain = __itt_domain_create("Roofline");
 
 int main(int argc, char **argv){
+    
     auto params = parse(argc, argv);
     size_t n = RHSDIM;
     std::cout << "Reading A from: " << (realpath((fs::path(params.input)).c_str(), NULL)) << std::endl;
@@ -80,13 +84,7 @@ int main(int argc, char **argv){
     double* result_csb = experiment_spmm_csb<double, int32_t>(params, n, m, k, nnz);
 
     std::cout << "SpMM complete, checking correctness" << std::endl;
-    // std::string julia_cmd = "julia check_correctness.jl " + params.input + " " + params.output + " " + std::to_string(n);
-    // int ret = std::system(julia_cmd.c_str());
 
-    // if (ret != 0) {
-    //     std::cerr << "Failed with code " << ret << std::endl;
-    //     return ret;
-    // }
     if(compare_dense_matrices(result_csr, result_mkl, m, n) 
     && compare_dense_matrices(result_csr, result_csb, m, n)
     && compare_dense_matrices(result_csb, result_mkl, m, n))
@@ -102,7 +100,6 @@ T* experiment_spmm_csr(benchmark_params_t params, size_t n, I m, I k, I nnz,
     I* A_ptr, I* A_idx, T* A_val, T* B_val){
 
     T* C_val = (T*) calloc(m * n, sizeof(T));  // Allocate result: C = m x n
-    // memset(C_val, 0, sizeof(T) * m * n); // reset C_val for multiple trials
 
     I col_a, p, pmax;
     T val_a;
@@ -110,7 +107,12 @@ T* experiment_spmm_csr(benchmark_params_t params, size_t n, I m, I k, I nnz,
     std::cout << "Beginning SpMM CSR" << std::endl;
     auto start_time = std::chrono::high_resolution_clock::now();
 
-    ANNOTATE_SITE_BEGIN("spmm");
+    // ANNOTATE_SITE_BEGIN("spmm_csr");
+    memset(C_val, 0, sizeof(T) * m * n); // reset C_val for multiple trials
+
+    __itt_task_begin(roofline_domain, __itt_null, __itt_null, __itt_string_handle_create("CSR"));
+    __itt_resume(); //Intel Advisor starts recording performance data
+
 
     #pragma omp parallel for schedule(dynamic)
     for (I row = 0; row < m; ++row) {
@@ -126,7 +128,11 @@ T* experiment_spmm_csr(benchmark_params_t params, size_t n, I m, I k, I nnz,
         }
     }
 
-    ANNOTATE_SITE_END("spmm");
+    __itt_pause(); //Intel Advisor starts recording performance data
+    __itt_task_end(roofline_domain);
+
+
+    // ANNOTATE_SITE_END("spmm_csr");
     
     auto end_time = std::chrono::high_resolution_clock::now();
     auto time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
@@ -164,17 +170,26 @@ T* experiment_spmm_mkl(benchmark_params_t params, size_t n, I m, I k, I nnz,
     std::cout << "Beginning SpMM MKL" << std::endl;
     auto start_time = std::chrono::high_resolution_clock::now();
 
-    ANNOTATE_SITE_BEGIN("mkl_spmm");
+    // ANNOTATE_SITE_BEGIN("spmm_mkl");
     // C = A * B, set alpha=1, beta=0 -> no accumulation
-    status = mkl_sparse_d_mm(SPARSE_OPERATION_NON_TRANSPOSE, alpha, A, descr,
-                SPARSE_LAYOUT_ROW_MAJOR,
-                    B_val, n,
-                    n,               // LDB = num columns of B
-                    beta,
-                    C_val_mkl, n     // LDC = num columns of C
-                );
+    // for(int i=0; i<REPEAT; i++) {
+    
+    __itt_task_begin(roofline_domain, __itt_null, __itt_null, __itt_string_handle_create("MKL"));
+    __itt_resume();
 
-    ANNOTATE_SITE_END("mkl_spmm");
+        status = mkl_sparse_d_mm(SPARSE_OPERATION_NON_TRANSPOSE, alpha, A, descr,
+                    SPARSE_LAYOUT_ROW_MAJOR,
+                        B_val, n,
+                        n,               // LDB = num columns of B
+                        beta,
+                        C_val_mkl, n     // LDC = num columns of C
+                    );
+
+    __itt_pause();
+    __itt_task_end(roofline_domain);
+
+    // }
+    // ANNOTATE_SITE_END("spmm_mkl");
     
     auto end_time = std::chrono::high_resolution_clock::now();
     auto time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
@@ -219,7 +234,6 @@ T* experiment_spmm_csb(benchmark_params_t params, size_t n, I m, I k, I nnz) {
     typedef array<T, RHSDIM> PACKED;
     vector< PACKED, aligned_allocator<PACKED, ALIGN> > x(k);
     vector< PACKED, aligned_allocator<PACKED, ALIGN> > y_bicsb(m);
- 
     fillzero<T, aligned_allocator<PACKED, ALIGN>, RHSDIM>(y_bicsb);
     for (size_t i = 0; i < k; ++i) {           // loop over rows of B (columns of A)
         for (size_t j = 0; j < n; ++j) {  // loop over RHS (columns of B)
@@ -228,13 +242,23 @@ T* experiment_spmm_csb(benchmark_params_t params, size_t n, I m, I k, I nnz) {
     }
 
     typedef PTSRArray<T,T, RHSDIM> PTARR;
-    // cout << "starting SpMM ... " << endl;
     
     std::cout << "Beginning SpMM CSB" << std::endl;
     auto start_time = std::chrono::high_resolution_clock::now();
     
+    // ANNOTATE_SITE_BEGIN("spmm_csb");
+    // for(int i=0; i<REPEAT; i++) {
+
+    __itt_task_begin(roofline_domain, __itt_null, __itt_null, __itt_string_handle_create("CSB"));
+    __itt_resume();
+        
     bicsb_gespmv<PTARR>(bicsb, &(x[0]), &(y_bicsb[0]));
     
+    __itt_pause();
+    __itt_task_end(roofline_domain);
+    // }
+    // ANNOTATE_SITE_END("spmm_csb");
+
     auto end_time = std::chrono::high_resolution_clock::now();
     auto time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
     std::cout << "spmm_mkl time: " << std::fixed << std::setprecision(6) << (static_cast<double>(time_ns.count()) * 1e-9) << "s\n\n";
