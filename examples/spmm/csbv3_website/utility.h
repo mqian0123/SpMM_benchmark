@@ -9,8 +9,6 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
-#include <omp.h>
-
 #include <mmintrin.h>  //  MMX
 #include <xmmintrin.h> //  SSE
 #include <emmintrin.h> //  SSE 2  
@@ -18,13 +16,44 @@
 
 using namespace std;
 
-// ====== Parallel Macros ======
-#define WORKERS omp_get_max_threads()
+// #include <cilk/cilk_api.h>
+// #include <cilk/cilk.h>
+#define WORKERS 8
 
 #ifdef BWTEST
-    #define UNROLL 100
+	#define UNROLL 100
 #else
-    #define UNROLL 1
+	#define UNROLL 1
+#endif
+
+#ifndef CILK_STUB
+#ifdef __cplusplus
+extern "C" {
+#endif
+/*
+ * __cilkrts_synched
+ *
+ * Allows an application to determine if there are any outstanding
+ * children at this instant. This function will examine the current
+ * full frame to determine this.
+ */
+
+// CILK_EXPORT __CILKRTS_NOTHROW
+int __cilkrts_synched(void);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#else /* CILK_STUB */
+/* Stubs for the api functions */
+#define __cilkrts_synched() (1)
+#endif /* CILK_STUB */
+
+#ifdef STATS
+	#include <cilk/reducer_opadd.h>
+	cilk::reducer_opadd<__int64> blockparcalls;
+	cilk::reducer_opadd<__int64> subspmvcalls;
+	cilk::reducer_opadd<__int64> atomicflops;
 #endif
 
 void * address;
@@ -166,7 +195,7 @@ unsigned prescan(unsigned * a, MTYPE * const M, int n)
 		int numthreads = SLACKNESS*WORKERS;
 		thread_data * thdatas = new thread_data[numthreads];
 		unsigned share = _n/numthreads;
-		#pragma omp parallel for
+		// cilk_for(int t=0; t < numthreads; ++t)
 		for(int t=0; t < numthreads; ++t)
 		{
 			popcountall(_M+t*share, _a+t*share, ((t+1)==numthreads)?(_n-t*share):share);
@@ -181,7 +210,7 @@ unsigned prescan(unsigned * a, MTYPE * const M, int n)
 			thdatas[t].sum = sum;
 			sum += temp;
 		}
-		#pragma omp parallel for
+		// cilk_for(int tt=0; tt<numthreads; ++tt)
 		for(int tt=0; tt<numthreads; ++tt)
 		{				
 			unsigned * beg = thdatas[tt].beg;

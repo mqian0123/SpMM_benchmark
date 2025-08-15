@@ -7,6 +7,9 @@
 #include <cmath>
 #include <tr1/array>
 #include "promote.h"
+#include <immintrin.h>
+#include <memory> // For std::assume_aligned
+
 
 template <typename T>
 struct inf_plus{
@@ -66,6 +69,17 @@ struct UnrollerL<End, End, Step> {
 };
 
 
+// Put this somewhere accessible in your project, e.g., Semirings.h
+template <typename T1, typename T2>
+inline void unified_axpy(const T1* __restrict b, T2* __restrict c, size_t D, T1 a = T1(1))
+{
+    #pragma omp simd
+    for (size_t i = 0; i < D; ++i)
+        c[i] += a * b[i];
+}
+
+
+
 // (+,*) on std:array's
 template<class T1, class T2, unsigned D>
 struct PTSRArray
@@ -73,39 +87,31 @@ struct PTSRArray
 	typedef typename promote_trait<T1,T2>::T_promote T_promote;
 
 	// y <- a*x + y overload with a=1
-	static void axpy(const array<T2, D> & b, array<T_promote, D> & c)
-	{
-		const T2 * __restrict barr =  b.data();
-		T_promote * __restrict carr = c.data();
-		barr = (const T2 *) __builtin_assume_aligned(barr, ALIGN);
-		carr = (T_promote *) __builtin_assume_aligned(carr, ALIGN);
+    static void axpy(const std::array<T2, D> & b, std::array<T_promote, D> & c)
+    {
+        const T2* __restrict barr = std::assume_aligned<ALIGN>(b.data());
+        T_promote* __restrict carr = std::assume_aligned<ALIGN>(c.data());
 
-
-		#pragma simd
-		for(int i=0; i<D; ++i)
-		{
-			carr[i] +=  barr[i];
-		}
-		// auto multadd = [&] (int i) { c[i] +=  b[i]; };
-		// UnrollerL<0, D, 1>::step ( multadd );
-	}
+        // Full compile-time unrolling with OpenMP SIMD hint
+        auto add_fn = [&](int i){
+            carr[i] += barr[i];
+        };
+        UnrollerL<0, D, 1>::step(add_fn);
+    }
 	
 	// Todo: Do partial unrolling; this code will bloat for D > 32 
-	static void axpy(T1 a, const array<T2,D> & b, array<T_promote,D> & c)
-	{
-		const T2 * __restrict barr =  b.data();
-		T_promote * __restrict carr = c.data();
-		barr = (const T2 *) __builtin_assume_aligned(barr, ALIGN);
-		carr = (T_promote *) __builtin_assume_aligned(carr, ALIGN);
+    static void axpy(T1 a, const std::array<T2,D> & b, std::array<T_promote,D> & c)
+    {
+        const T2* __restrict barr = std::assume_aligned<ALIGN>(b.data());
+        T_promote* __restrict carr = std::assume_aligned<ALIGN>(c.data());
 
-		#pragma simd
-		for(int i=0; i<D; ++i)
-		{
-			carr[i] +=  a* barr[i];
-		}	
-		//auto multadd = [&] (int i) { carr[i] +=  a* barr[i]; };
-		//UnrollerL<0, D, 1>::step ( multadd );	
-	}
+        // Full compile-time unrolling with OpenMP SIMD hint
+        auto muladd_fn = [&](int i){
+            carr[i] += a * barr[i];
+        };
+        UnrollerL<0, D, 1>::step(muladd_fn);
+    }
+
 };
 
 // (min,+) on scalars

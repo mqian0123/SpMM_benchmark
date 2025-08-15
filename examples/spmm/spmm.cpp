@@ -96,7 +96,7 @@ int main(int argc, char **argv){
 }
 
 template <typename T, typename I>
-T* experiment_spmm_csr(benchmark_params_t params, size_t n, I m, I k, I nnz, 
+T* experiment_spmm_csr(size_t n, I m, I k, I nnz, 
     I* A_ptr, I* A_idx, T* A_val, T* B_val){
 
     T* C_val = (T*) calloc(m * n, sizeof(T));  // Allocate result: C = m x n
@@ -105,7 +105,6 @@ T* experiment_spmm_csr(benchmark_params_t params, size_t n, I m, I k, I nnz,
     T val_a;
 
     std::cout << "Beginning SpMM CSR" << std::endl;
-    auto start_time = std::chrono::high_resolution_clock::now();
 
     // ANNOTATE_SITE_BEGIN("spmm_csr");
     memset(C_val, 0, sizeof(T) * m * n); // reset C_val for multiple trials

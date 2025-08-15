@@ -9,6 +9,7 @@
 #include <tuple>
 #include "csc.h"
 #include "mortoncompare.h"
+#include "friends.h"
 
 using namespace std;
 
@@ -29,7 +30,6 @@ public:
 	BiCsb<NT,IT> & operator=(const BiCsb<NT,IT> & rhs);	// assignment operator
 	BiCsb (Csc<NT, IT> & csc, int workers, IT forcelogbeta = 0);
 	
-	ofstream & PrintStats(ofstream & outfile) const;
 	IT colsize() const { return n;} 
 	IT rowsize() const { return m;}
     IT numnonzeros() const { return nz; }
@@ -178,15 +178,6 @@ private:
 
 	template <typename SR, typename NU, typename IU, typename RHS, typename LHS>
 	friend void bicsb_gespmv (const BiCsb<NU, IU> & A, const RHS * __restrict x, LHS * __restrict y);
-
-	template <typename SR, typename NU, typename IU, typename RHS, typename LHS>
-	friend void bicsb_gespmvt (const BiCsb<NU, IU> & A, const RHS * __restrict x, LHS * __restrict y);
-
-	template <class CSB>
-	friend float RowImbalance(const CSB & A);	// befriend any CSB instantiation	
-
-	template <typename NU, typename IU>
-	friend float ColImbalance(const BiCsb<NU, IU> & A);
 };
 
 #include "friends.h"

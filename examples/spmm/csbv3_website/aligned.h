@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <vector>
 #include <iostream>
-#include <emmintrin.h>
 using namespace std;
  
 /**
