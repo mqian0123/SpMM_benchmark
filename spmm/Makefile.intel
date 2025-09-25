@@ -1,0 +1,26 @@
+# source /opt/intel/oneapi/setvars.sh
+
+# Compiler and flags
+CXX       = icpx
+CXXFLAGS  = -std=c++20 -qmkl -qopenmp -march=native
+
+
+TARGET    = spmm
+SRC       = spmm.cpp
+
+# Include paths
+# INCLUDES  = 
+
+# Library paths
+# LDFLAGS   = 
+
+# Libraries
+# LIBS      = 
+
+$(TARGET): $(SRC)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SRC)
+# 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LDFLAGS) -o $@ $^ $(LIBS)
+
+
+clean:
+	rm -f $(TARGET)

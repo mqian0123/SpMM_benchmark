@@ -4,15 +4,15 @@
 #include <chrono>
 
 #include "mkl_spblas.h" // Intel MKL
-#include <ittnotify.h>  // Intel Advisor
+// #include <ittnotify.h>  // Intel Advisorf
 
-#define ALIGN 32
-#define RHSDIM 16   // number of columns in B, used for CSB
+#define ALIGN 64
+#define RHSDIM 4   // number of columns in B, used for CSB
 
 #include "csb_library/csb.h"    // CSB Implementation
 
-static __itt_domain* domain = __itt_domain_create("SpMM");
-static __itt_string_handle* task_name = __itt_string_handle_create("test");
+// static __itt_domain* domain = __itt_domain_create("SpMM");
+// static __itt_string_handle* task_name = __itt_string_handle_create("test");
 
 // ================== Aligned allocator ==================
 template <class T, std::size_t Alignment>
@@ -35,7 +35,7 @@ template <class T, class U, std::size_t A>
 constexpr bool operator!=(const AlignedAllocator<T, A>&, const AlignedAllocator<U, A>&) noexcept { return false; }
 
 // ================== CSR container ==================
-template <typename Index = int32_t, typename Value = double, std::size_t Alignment = 32>
+template <typename Index = int32_t, typename Value = double, std::size_t Alignment = 64>
 struct CSR {
     using index_t = Index;
     using value_t = Value;
@@ -45,6 +45,7 @@ struct CSR {
     std::vector<value_t, AlignedAllocator<value_t, Alignment>> values;
 };
 
+// From CSB Library
 template <typename NT, typename ALLOC, int DIM>
 void fillzero (vector< array<NT,DIM>, ALLOC > & vecofarr)
 {
@@ -53,7 +54,7 @@ void fillzero (vector< array<NT,DIM>, ALLOC > & vecofarr)
 }
 
 // ================== Loader ==================
-template <typename Index = int32_t, typename Value = double, std::size_t Alignment = 32>
+template <typename Index = int32_t, typename Value = double, std::size_t Alignment = 64>
 CSR<Index, Value, Alignment> load_mtx(const std::string& filename) {
 
     std::ifstream fin(filename);
@@ -88,22 +89,22 @@ CSR<Index, Value, Alignment> load_mtx(const std::string& filename) {
 
     // Get Dimensions and NNZ
     Index nrows=0, ncols=0;
-    long long nnz_decl;
+    long long nnz;
     std::istringstream ss(line);
-    if (!(ss >> nrows >> ncols >> nnz_decl)) {
+    if (!(ss >> nrows >> ncols >> nnz)) {
         throw std::runtime_error("Failed to parse size line");
     }
-    if (nrows <= 0 || ncols <= 0 || nnz_decl < 0) {
+    if (nrows <= 0 || ncols <= 0 || nnz < 0) {
         throw std::runtime_error("Invalid matrix dimensions/nnz");
     }
 
     struct Triplet { Index r, c; Value v; };
     std::vector<Triplet> coo;
-    coo.reserve(is_symmetric ? static_cast<size_t>(nnz_decl)*2ull : static_cast<size_t>(nnz_decl));
+    coo.reserve(is_symmetric ? static_cast<size_t>(nnz)*2ull : static_cast<size_t>(nnz));
 
     // Parse values
     long long read_entries = 0;
-    while (read_entries < nnz_decl && std::getline(fin, line)) {
+    while (read_entries < nnz && std::getline(fin, line)) {
         bool only_ws = true;
         for (char ch : line) { if (!std::isspace(static_cast<unsigned char>(ch))) { only_ws = false; break; } }
         if (only_ws) continue;
@@ -129,7 +130,7 @@ CSR<Index, Value, Alignment> load_mtx(const std::string& filename) {
         }
         ++read_entries;
     }
-    if (read_entries != nnz_decl) {
+    if (read_entries != nnz) {
         throw std::runtime_error("Entry count mismatch");
     } 
 
@@ -200,8 +201,8 @@ std::vector<double> experiment_spmm_csr(
     auto start_time = std::chrono::high_resolution_clock::now();
 
     // Advisor
-    __itt_resume();
-    __itt_task_begin(domain, __itt_null, __itt_null, task_name);
+    // __itt_resume();
+    // __itt_task_begin(domain, __itt_null, __itt_null, task_name);
 
     #pragma omp parallel for schedule(dynamic)
     for (size_t row = 0; row < m; ++row) {
@@ -217,8 +218,8 @@ std::vector<double> experiment_spmm_csr(
         }
     }
 
-    __itt_task_end(domain);
-    __itt_pause();
+    // __itt_task_end(domain);
+    // __itt_pause();
 
     auto end_time = std::chrono::high_resolution_clock::now();
     auto time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
@@ -245,14 +246,14 @@ std::vector<double> experiment_spmm_mkl(
     auto start_time = std::chrono::high_resolution_clock::now();
 
     // Advisor
-    __itt_resume();
-    __itt_task_begin(domain, __itt_null, __itt_null, task_name);
+    // __itt_resume();
+    // __itt_task_begin(domain, __itt_null, __itt_null, task_name);
 
     mkl_sparse_d_mm(SPARSE_OPERATION_NON_TRANSPOSE, alpha, A, descr,
                     SPARSE_LAYOUT_ROW_MAJOR, B_val, n, n, beta, C_val.data(), n);
     
-    __itt_task_end(domain);
-    __itt_pause();
+    // __itt_task_end(domain);
+    // __itt_pause();
     
     auto end_time = std::chrono::high_resolution_clock::now();
     auto time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
@@ -306,13 +307,13 @@ std::vector<double> experiment_spmm_csb(
     auto start_time = std::chrono::high_resolution_clock::now();
 
     // Advisor
-    __itt_resume();
-    __itt_task_begin(domain, __itt_null, __itt_null, task_name);
+    // __itt_resume();
+    // __itt_task_begin(domain, __itt_null, __itt_null, task_name);
 
     bicsb_gespmv<PTARR>(bicsb, &x[0], &y_bicsb[0]);
 
-    __itt_task_end(domain);
-    __itt_pause();
+    // __itt_task_end(domain);
+    // __itt_pause();
 
     auto end_time = std::chrono::high_resolution_clock::now();
     auto time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
@@ -346,7 +347,7 @@ bool compare_dense_matrices(const std::vector<double>& C1, const std::vector<dou
 
 // ================== Main ==================
 int main(int argc, char** argv) {
-    __itt_pause();
+    // __itt_pause();
 
     if (argc < 3) { 
         std::cerr << "Usage: " << argv[0] << " <matrix_file.mtx> <n_columns_B>" << std::endl; 
