@@ -4,7 +4,7 @@
 #include <chrono>
 
 #include "mkl_spblas.h" // Intel MKL
-// #include <ittnotify.h>  // Intel Advisorf
+// #include <ittnotify.h>  // Intel Advisor
 
 #define ALIGN 64
 #define RHSDIM 4   // number of columns in B, used for CSB
