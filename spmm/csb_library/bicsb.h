@@ -41,24 +41,11 @@ private:
 	template <typename SR, typename RHS, typename LHS>	
 	void SubSpMV(IT * btop, IT bstart, IT bend, const RHS * __restrict x, LHS * __restrict suby) const;
 
-	template <typename SR, typename RHS, typename LHS>	
-	void SubSpMVTrans(IT col, IT rowstart, IT rowend, const RHS * __restrict x, LHS * __restrict suby) const;
-    
-    template <typename SR, typename RHS, typename LHS>
-    void SubSpMVTrans(const vector< tuple<IT,IT,IT> > & chunk, const RHS * __restrict x, LHS * __restrict suby) const;
-
 	template <typename SR, typename RHS, typename LHS>
 	void BMult(IT** chunks, IT start, IT end, const RHS * __restrict x, LHS * __restrict y, IT ysize) const;
 
 	template <typename SR, typename RHS, typename LHS>	
-	void BTransMult(vector< vector< tuple<IT,IT,IT> > * > & chunks, IT start, IT end, const RHS * __restrict x, LHS * __restrict y, IT ysize) const;
-
-	template <typename SR, typename RHS, typename LHS>	
 	void BlockPar(IT start, IT end, const RHS * __restrict subx, LHS * __restrict suby, 
-					IT rangebeg, IT rangeend, IT cutoff) const;
-
-	template <typename SR, typename RHS, typename LHS>	
-	void BlockParT(IT start, IT end, const RHS * __restrict subx, LHS * __restrict suby, 
 					IT rangebeg, IT rangeend, IT cutoff) const;
 
 	void SortBlocks(pair<IT, pair<IT,IT> > * pairarray, NT * val);

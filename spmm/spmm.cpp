@@ -2,6 +2,8 @@
 #include <iostream>
 #include <numeric>
 #include <chrono>
+#include <omp.h>
+#include <mkl.h>
 
 #include "mkl_spblas.h" // Intel MKL
 // #include <ittnotify.h>  // Intel Advisor
@@ -9,7 +11,7 @@
 #include <likwid.h>
 
 #define ALIGN 64
-#define RHSDIM 4   // number of columns in B, used for CSB
+#define RHSDIM 16   // number of columns in B, used for CSB
 
 #include "csb_library/csb.h"    // CSB Implementation
 
@@ -290,8 +292,7 @@ std::vector<double> experiment_spmm_csb(
 
     Csc<Value,Index> csc(triples.data(), triples.size(), A_csr.nrows, A_csr.ncols);
     int32_t forcelogbeta = 0;
-    int num_workers = 16; // SPECIFY number of workers here
-    BiCsb<Value,Index> bicsb(csc, num_workers, forcelogbeta); // BiCsb (Csc<NT, IT> & csc, int workers, IT forcelogbeta = 0);
+    BiCsb<Value,Index> bicsb(csc, omp_get_max_threads(), forcelogbeta); // BiCsb (Csc<NT, IT> & csc, int workers, IT forcelogbeta = 0);
 
     typedef array<Value, RHSDIM> PACKED;
     std::vector<PACKED, aligned_allocator<PACKED, Alignment>> x(A_csr.ncols);
@@ -359,13 +360,23 @@ bool compare_dense_matrices(const std::vector<double>& C1, const std::vector<dou
 int main(int argc, char** argv) {
     // __itt_pause();
     likwid_markerInit();
-
-    if (argc < 3) { 
-        std::cerr << "Usage: " << argv[0] << " <matrix_file.mtx> <n_columns_B>" << std::endl; 
+    
+    if (argc < 4) { 
+        std::cerr << "Usage: " << argv[0] << " <matrix_file.mtx> <n_columns_B> <num_threads>" << std::endl; 
         return 1; 
     }
     std::string matrix_file = argv[1];
     int n = std::atoi(argv[2]);
+    int num_threads = std::atoi(argv[3]);
+
+    if(num_threads <= 0) {
+        std::cerr << "Error: num_threads > 0" << std::endl;
+        return 1;
+    }
+    omp_set_num_threads(num_threads);
+    mkl_set_num_threads(num_threads);
+    cout << "OMP Threads: " << omp_get_max_threads() << " MKL Threads: " << mkl_get_max_threads() << endl;
+
     if (n <= 0) { 
         std::cerr << "Error: columns > 0" << std::endl; 
         return 1; 
@@ -392,9 +403,9 @@ int main(int argc, char** argv) {
 
     auto C_csb = experiment_spmm_csb(n, A_csr);
 
-    std::cout << "CSR vs MKL match: " << (compare_dense_matrices(C_csr,C_mkl,m,n) ? "YES" : "NO") << "\n";
-    std::cout << "CSR vs CSB match: " << (compare_dense_matrices(C_csr,C_csb,m,n) ? "YES" : "NO") << "\n";
-    std::cout << "MKL vs CSB match: " << (compare_dense_matrices(C_mkl,C_csb,m,n) ? "YES" : "NO") << "\n";
+    // std::cout << "CSR vs MKL match: " << (compare_dense_matrices(C_csr,C_mkl,m,n) ? "YES" : "NO") << "\n";
+    // std::cout << "CSR vs CSB match: " << (compare_dense_matrices(C_csr,C_csb,m,n) ? "YES" : "NO") << "\n";
+    // std::cout << "MKL vs CSB match: " << (compare_dense_matrices(C_mkl,C_csb,m,n) ? "YES" : "NO") << "\n";
 
     likwid_markerClose();
     

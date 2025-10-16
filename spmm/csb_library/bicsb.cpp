@@ -374,103 +374,30 @@ void BiCsb<NT, IT>::BMult(IT** chunks, IT start, IT end, const RHS * __restrict 
         #pragma omp task shared(y)
         BMult<SR>(chunks, start, mid, x, y, ysize);
 
-        // Sequential or merged branch
-        if (false)  // synchronous behavior
-        {
-            BMult<SR>(chunks, mid, end, x, y, ysize);
-        }
-        else // async/merged behavior
-        {
-            LHS * temp = new LHS[ysize]();
+		// if(true) { 
 
-            #pragma omp task shared(temp)
-            BMult<SR>(chunks, mid, end, x, temp, ysize);
+		// Sequential
+		BMult<SR>(chunks, mid, end, x, y, ysize);
+		
+		// }
+		// else { // ASYNC MERGED BEHAVIOR
+		// 	LHS * temp = new LHS[ysize]();
 
-            #pragma omp taskwait  // wait for both tasks to complete
+		// 	#pragma omp task shared(temp)
+		// 	BMult<SR>(chunks, mid, end, x, temp, ysize);
 
-            #pragma omp simd
-            for (IT i = 0; i < ysize; ++i)
-                SR::axpy(temp[i], y[i]);
+		// 	#pragma omp taskwait  // wait for both tasks to complete
 
-            delete[] temp;
-        }
+		// 	#pragma omp simd
+		// 	for (IT i = 0; i < ysize; ++i)
+		// 		SR::axpy(temp[i], y[i]);
 
-        #pragma omp taskwait  // ensure all child tasks finish before returning
-    }
-}
-
-/**
- * Improved non-zero dividing version of BTransMult (as opposed to spatially dividing)
- * @warning {difference from BMult is that while the top array pointed by chunks is still contiguous... 
- *              the nonzeros pointed by two consecutive top locations - top[i] and top[i+1] are NOT}
- * @param[vector< vector< pair<IT,IT> > * >] chunks {a vector of pointers to vectors of pairs}
- * 	Each vector of pairs is a chunk and each pair is a block within that chunk
- * 	chunks[i] is valid for i = {start,start+1,...,end-1}
- **/
-template <class NT, class IT>
-template <typename SR, typename RHS, typename LHS>
-void BiCsb<NT, IT>::BTransMult(std::vector<std::vector<std::tuple<IT,IT,IT>> *> & chunks, 
-							   IT start, IT end, const RHS * __restrict x, LHS * __restrict y, IT ysize) const
-{
-#ifdef STATS
-    blockparcalls += 1;
-#endif
-    assert(end - start > 0);  // there should be at least one chunk
-
-    if (end - start == 1)  // single chunk
-    {
-        if (chunks[start]->size() == 1)  // chunk consists of a single block
-        {
-            auto block = chunks[start]->front();
-            IT chi = (get<2>(block) << rowlowbits);
-
-            if (ysize == (lowrowmask + 1) && (m - chi) > lowrowmask &&
-                (get<1>(block) - get<0>(block)) > BREAKEVEN * ysize)
-            {
-                const RHS * __restrict subx = &x[chi];
-                BlockParT<SR>(get<0>(block), get<1>(block), subx, y, 0, blcrange, BREAKEVEN * ysize);
-            }
-            else
-            {
-                SubSpMVTrans<SR>(*(chunks[start]), x, y);
-            }
-        }
-        else  // multiple sparse blocks in the chunk
-        {
-            SubSpMVTrans<SR>(*(chunks[start]), x, y);
-        }
-    }
-    else  // multiple chunks
-    {
-        IT mid = (start + end) / 2;
-
-        #pragma omp task shared(y)
-        BTransMult<SR>(chunks, start, mid, x, y, ysize);
-
-        if (true)  // synchronous branch
-        {
-            BTransMult<SR>(chunks, mid, end, x, y, ysize);
-        }
-        else
-        {
-            LHS * temp = new LHS[ysize]();
-
-            #pragma omp task shared(temp)
-            BTransMult<SR>(chunks, mid, end, x, temp, ysize);
-
-            #pragma omp taskwait  // wait for all tasks to finish
-
-            #pragma omp simd
-            for (IT i = 0; i < ysize; ++i)
-                SR::axpy(temp[i], y[i]);
-
-            delete[] temp;
-        }
+		// 	delete[] temp;
+        // }
 
         #pragma omp taskwait  // ensure all child tasks finish before returning
     }
 }
-
 
 // double* restrict a; --> No aliases for a[0], a[1], ...
 // bstart/bend: block start/end index (to the top array)
@@ -552,55 +479,6 @@ void BiCsb<NT, IT>::SubSpMV(IT * __restrict btop, IT bstart, IT bend, const RHS 
 	}
 }
 
-//! SubSpMVTrans's chunked version
-template <class NT, class IT>
-template <typename SR, typename RHS, typename LHS>
-void BiCsb<NT, IT>::SubSpMVTrans(const vector< tuple<IT,IT,IT> > & chunk, const RHS * __restrict x, LHS * __restrict suby) const
-{
-	IT * __restrict r_bot = bot;
-	NT * __restrict r_num = num;
-	for(auto itr = chunk.begin(); itr != chunk.end(); ++itr) // over all blocks within this chunk
-	{
-		// get the starting point for accessing x
-        IT chi = ( get<2>(*itr) << rowlowbits);
-        const RHS * __restrict subx = &x[chi];
-        
-        IT nzbeg = get<0>(*itr);
-        IT nzend = get<1>(*itr);
-        
-		for (IT k = nzbeg ; k < nzend ; ++k)
-		{
-			// Note the swap in cli/rli
-			IT cli = ((r_bot[k] >> collowbits) & lowrowmask);
-			IT rli = (r_bot[k] & lowcolmask);
-			SR::axpy(r_num[k], subx[cli], suby[rli]);	// suby [rli] += r_num[k] * subx [cli]  where subx and suby are vectors.
-		}
-	}
-}
-
-template <class NT, class IT>
-template <typename SR, typename RHS, typename LHS>
-void BiCsb<NT, IT>::SubSpMVTrans(IT col, IT rowstart, IT rowend, const RHS * __restrict x, LHS * __restrict suby) const
-{
-	IT * __restrict r_bot = bot;
-	NT * __restrict r_num = num;
-	for(IT i= rowstart; i < rowend; ++i)
-	{
-		// get the starting point for accessing x
-		IT chi = (i << rowlowbits);
-		const RHS * __restrict subx = &x[chi];
-		
-		for (IT k = top[i][col] ; k < top[i][col+1] ; ++k)
-		{
-			// Note the swap in cli/rli
-			IT cli = ((r_bot[k] >> collowbits) & lowrowmask);
-			IT rli = (r_bot[k] & lowcolmask);
-			SR::axpy(r_num[k], subx[cli], suby[rli]);	// suby [rli] += r_num[k] * subx [cli]  where subx and suby are vectors.
-		}
-	}	
-}
-
-
 template <class NT, class IT>
 template <typename SR, typename RHS, typename LHS>
 void BiCsb<NT, IT>::BlockPar(IT start, IT end, const RHS * __restrict subx, LHS * __restrict suby, 
@@ -608,7 +486,7 @@ void BiCsb<NT, IT>::BlockPar(IT start, IT end, const RHS * __restrict subx, LHS 
 {
     assert(IsPower2(rangeend-rangebeg));
 
-    if (end - start < cutoff)
+    if (end - start < cutoff) // number of values < cutoff, computes directly
     {
         IT * __restrict r_bot = bot;
         NT * __restrict r_num = num;
@@ -619,7 +497,7 @@ void BiCsb<NT, IT>::BlockPar(IT start, IT end, const RHS * __restrict subx, LHS 
             SR::axpy(r_num[k], subx[cli], suby[rli]);
         }
     }
-    else
+    else	// recursive subdivision, splits into 4 sections
     {
         IT halfrange = (rangebeg + rangeend) / 2;
         IT qrt1range = (rangebeg + halfrange) / 2;
@@ -665,74 +543,6 @@ void BiCsb<NT, IT>::BlockPar(IT start, IT end, const RHS * __restrict subx, LHS 
             BlockPar<SR>(start + size0 + size1, end - size3, subx, suby, halfrange, qrt3range, ncutoff);
 
             BlockPar<SR>(end - size3, end, subx, suby, qrt3range, rangeend, ncutoff);
-
-            #pragma omp taskwait
-        }
-    }
-}
-
-template <class NT, class IT>
-template <typename SR, typename RHS, typename LHS>
-void BiCsb<NT, IT>::BlockParT(IT start, IT end, const RHS * __restrict subx, LHS * __restrict suby, 
-                              IT rangebeg, IT rangeend, IT cutoff) const
-{
-    if (end - start < cutoff)
-    {
-        IT * __restrict r_bot = bot;
-        NT * __restrict r_num = num;
-        for (IT k = start; k < end; ++k)
-        {
-            IT cli = ((r_bot[k] >> collowbits) & lowrowmask);  // note the swap
-            IT rli = (r_bot[k] & lowcolmask);
-            SR::axpy(r_num[k], subx[cli], suby[rli]);
-        }
-    }
-    else
-    {
-        IT halfrange = (rangebeg + rangeend) / 2;
-        IT qrt1range = (rangebeg + halfrange) / 2;
-        IT qrt3range = (halfrange + rangeend) / 2;
-
-        IT * mid   = std::lower_bound(&bot[start], &bot[end], halfrange, mortoncmp);
-        IT * left  = std::lower_bound(&bot[start], mid, qrt1range, mortoncmp);
-        IT * right = std::lower_bound(mid, &bot[end], qrt3range, mortoncmp);
-
-        IT size0 = static_cast<IT>(left - &bot[start]);
-        IT size1 = static_cast<IT>(mid - left);
-        IT size2 = static_cast<IT>(right - mid);
-        IT size3 = static_cast<IT>(&bot[end] - right);
-
-        IT ncutoff = std::max<IT>(cutoff / 2, MINNNZTOPAR);
-
-        if ((absdiff(size0, size3) + absdiff(size1, size2)) < (absdiff(size0, size2) + absdiff(size1, size3)))
-        {
-            #pragma omp task
-            BlockParT<SR>(start, start + size0, subx, suby, rangebeg, qrt1range, ncutoff);
-
-            BlockParT<SR>(end - size3, end, subx, suby, qrt3range, rangeend, ncutoff);
-
-            #pragma omp taskwait
-
-            #pragma omp task
-            BlockParT<SR>(start + size0, start + size0 + size1, subx, suby, qrt1range, halfrange, ncutoff);
-
-            BlockParT<SR>(start + size0 + size1, end - size3, subx, suby, halfrange, qrt3range, ncutoff);
-
-            #pragma omp taskwait
-        }
-        else
-        {
-            #pragma omp task
-            BlockParT<SR>(start, start + size0, subx, suby, rangebeg, qrt1range, ncutoff);
-
-            BlockParT<SR>(start + size0 + size1, end - size3, subx, suby, halfrange, qrt3range, ncutoff);
-
-            #pragma omp taskwait
-
-            #pragma omp task
-            BlockParT<SR>(start + size0, start + size0 + size1, subx, suby, qrt1range, halfrange, ncutoff);
-
-            BlockParT<SR>(end - size3, end, subx, suby, qrt3range, rangeend, ncutoff);
 
             #pragma omp taskwait
         }

@@ -35,6 +35,7 @@ void bicsb_gespmv(const BiCsb<NT, IT> & A, const RHS * __restrict x, LHS * __res
 
     if (A.isPar())
     {
+        // cout << "Running Parallel " << A.nbr << endl;
         float rowave = static_cast<float>(A.numnonzeros()) / (A.nbr - 1);
 
         #pragma omp parallel for schedule(dynamic)
