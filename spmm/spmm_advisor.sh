@@ -12,14 +12,14 @@ module load PrgEnv-intel
 export PATH=/global/common/software/nersc9/intel/oneapi/advisor/2024.1/bin64:$PATH # Adds intel advisor
 
 # Specifies number of threads tested
-export OMP_NUM_THREADS=8
-export MKL_NUM_THREADS=8
+export OMP_NUM_THREADS=16
+export MKL_NUM_THREADS=16
 
 # Need to specify number of columns in B
 MATRICES=(
-    "road_usa.mtx 8"
+    # "road_usa.mtx 8"
     # "asia_osm.mtx 8"
-    # "333SP.mtx 8"
+    "data/333SP.mtx 4"
 )
 
 for MAT in "${MATRICES[@]}"; do
@@ -27,7 +27,7 @@ for MAT in "${MATRICES[@]}"; do
     echo ">>> Running Intel Advisor tripcounts for $NAME"
 
     srun -n 1 -c ${OMP_NUM_THREADS} advixe-cl --collect=tripcounts \
-        --flop --stacks --cache-simulation \
+        --flop --stacks \
         --project-dir=advisor_${NAME} \
         -- ./spmm $MAT
 done

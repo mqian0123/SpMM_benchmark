@@ -6,6 +6,8 @@
 #include "mkl_spblas.h" // Intel MKL
 // #include <ittnotify.h>  // Intel Advisor
 
+#include <likwid.h>
+
 #define ALIGN 64
 #define RHSDIM 4   // number of columns in B, used for CSB
 
@@ -13,6 +15,7 @@
 
 // static __itt_domain* domain = __itt_domain_create("SpMM");
 // static __itt_string_handle* task_name = __itt_string_handle_create("test");
+
 
 // ================== Aligned allocator ==================
 template <class T, std::size_t Alignment>
@@ -203,7 +206,7 @@ std::vector<double> experiment_spmm_csr(
     // Advisor
     // __itt_resume();
     // __itt_task_begin(domain, __itt_null, __itt_null, task_name);
-
+    LIKWID_MARKER_START("CSR");
     #pragma omp parallel for schedule(dynamic)
     for (size_t row = 0; row < m; ++row) {
         int32_t row_start = A_ptr[row];
@@ -213,11 +216,11 @@ std::vector<double> experiment_spmm_csr(
             double val = A_val[idx];
             double* c_row = &C_val[row * n];
             const double* b_row = &B_val[col * n];
-            #pragma omp simd aligned(c_row,b_row:32)
+            #pragma omp simd
             for (size_t j = 0; j < n; ++j) c_row[j] += val * b_row[j];
         }
     }
-
+    LIKWID_MARKER_STOP("CSR");
     // __itt_task_end(domain);
     // __itt_pause();
 
@@ -248,10 +251,13 @@ std::vector<double> experiment_spmm_mkl(
     // Advisor
     // __itt_resume();
     // __itt_task_begin(domain, __itt_null, __itt_null, task_name);
+    LIKWID_MARKER_START("MKL");
 
     mkl_sparse_d_mm(SPARSE_OPERATION_NON_TRANSPOSE, alpha, A, descr,
                     SPARSE_LAYOUT_ROW_MAJOR, B_val, n, n, beta, C_val.data(), n);
     
+    LIKWID_MARKER_STOP("MKL");
+
     // __itt_task_end(domain);
     // __itt_pause();
     
@@ -284,7 +290,8 @@ std::vector<double> experiment_spmm_csb(
 
     Csc<Value,Index> csc(triples.data(), triples.size(), A_csr.nrows, A_csr.ncols);
     int32_t forcelogbeta = 0;
-    BiCsb<Value,Index> bicsb(csc, 1, forcelogbeta);
+    int num_workers = 16; // SPECIFY number of workers here
+    BiCsb<Value,Index> bicsb(csc, num_workers, forcelogbeta); // BiCsb (Csc<NT, IT> & csc, int workers, IT forcelogbeta = 0);
 
     typedef array<Value, RHSDIM> PACKED;
     std::vector<PACKED, aligned_allocator<PACKED, Alignment>> x(A_csr.ncols);
@@ -309,8 +316,11 @@ std::vector<double> experiment_spmm_csb(
     // Advisor
     // __itt_resume();
     // __itt_task_begin(domain, __itt_null, __itt_null, task_name);
+    LIKWID_MARKER_START("CSB");
 
     bicsb_gespmv<PTARR>(bicsb, &x[0], &y_bicsb[0]);
+
+    LIKWID_MARKER_STOP("CSB");   
 
     // __itt_task_end(domain);
     // __itt_pause();
@@ -348,6 +358,7 @@ bool compare_dense_matrices(const std::vector<double>& C1, const std::vector<dou
 // ================== Main ==================
 int main(int argc, char** argv) {
     // __itt_pause();
+    likwid_markerInit();
 
     if (argc < 3) { 
         std::cerr << "Usage: " << argv[0] << " <matrix_file.mtx> <n_columns_B>" << std::endl; 
@@ -385,5 +396,7 @@ int main(int argc, char** argv) {
     std::cout << "CSR vs CSB match: " << (compare_dense_matrices(C_csr,C_csb,m,n) ? "YES" : "NO") << "\n";
     std::cout << "MKL vs CSB match: " << (compare_dense_matrices(C_mkl,C_csb,m,n) ? "YES" : "NO") << "\n";
 
+    likwid_markerClose();
+    
     return 0;
 }

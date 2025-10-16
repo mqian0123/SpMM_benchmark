@@ -342,11 +342,11 @@ void BiCsb<NT, IT>::BMult(IT** chunks, IT start, IT end, const RHS * __restrict 
 
     if (end - start == 1)  // single chunk
     {
-        if ((chunks[end] - chunks[start]) == 1)  // chunk consists of a single (normally dense) block
+        if ((chunks[end] - chunks[start]) == 1)  // Single Chunk, single block
         {
             IT chi = ((chunks[start] - chunks[0]) << collowbits);
 
-            if (ysize == (lowrowmask + 1) && (m - chi) > lowcolmask)  // regular/complete block
+            if (ysize == (lowrowmask + 1) && (m - chi) > lowcolmask)  // regular/complete block, calls BlockPar (parallel block chunk multiplication)
             {
                 const RHS * __restrict subx = &x[chi];
                 #pragma omp parallel
@@ -355,17 +355,18 @@ void BiCsb<NT, IT>::BMult(IT** chunks, IT start, IT end, const RHS * __restrict 
                     BlockPar<SR>(*(chunks[start]), *(chunks[end]), subx, y, 0, blcrange, BREAKEVEN * ysize);
                 }
             }
-            else
+            else // for edge/partial blocks, calls SubSpMV, which handles general sparse submatrices
             {
                 SubSpMV<SR>(chunks[0], chunks[start] - chunks[0], chunks[end] - chunks[0], x, y);
             }
         }
-        else  // multiple small sparse blocks
+        else  // Single chunk, multiple small blocks 
         {
+			// if multiple small blocks, won't benefit from BlockPar
             SubSpMV<SR>(chunks[0], chunks[start] - chunks[0], chunks[end] - chunks[0], x, y);
         }
     }
-    else
+    else // More than one chunk
     {
         // divide chunks into half
         IT mid = (start + end) / 2;
@@ -374,11 +375,11 @@ void BiCsb<NT, IT>::BMult(IT** chunks, IT start, IT end, const RHS * __restrict 
         BMult<SR>(chunks, start, mid, x, y, ysize);
 
         // Sequential or merged branch
-        if (true)  // synchronous behavior
+        if (false)  // synchronous behavior
         {
             BMult<SR>(chunks, mid, end, x, y, ysize);
         }
-        else
+        else // async/merged behavior
         {
             LHS * temp = new LHS[ysize]();
 

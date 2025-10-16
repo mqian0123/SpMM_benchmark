@@ -1,0 +1,43 @@
+
+Lmod is automatically replacing "PrgEnv-gnu/8.5.0" with "PrgEnv-intel/8.5.0".
+
+
+Lmod is automatically replacing "gcc-native/13.2" with "intel/2024.1.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-libsci/24.07.0     2) cray-mpich/8.1.30
+
+
+_______________________________________________________________________________________________________
+     Welcome to Spack!
+
+     In order to access the production stack, you will need to load a spack
+environment. Here are some tips to get started:
+
+
+     'spack env list' - List all Spack environments
+     'spack env activate gcc' - Activate the "gcc" Spack environment
+     'spack env status' - Display the active Spack environment
+     'spack load amrex' - Load the "amrex" Spack package into your user
+environment
+
+     For additional support, please refer to the following references:
+
+       NERSC E4S Documentation: https://docs.nersc.gov/applications/e4s/
+       E4S Documentation: https://e4s.readthedocs.io
+       Spack Documentation: https://spack.readthedocs.io/en/latest/
+       Spack Slack: https://spackpm.slack.com
+
+
+______________________________________________________________________________________________________
+     
+-------------------------------------------------------------------------------
+There are messages associated with the following module(s):
+-------------------------------------------------------------------------------
+
+spack/0.22:
+   This module is deprecated and will be removed in a future maintenance.
+   Please use the latest version.
+
+-------------------------------------------------------------------------------

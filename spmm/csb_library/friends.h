@@ -21,7 +21,7 @@ double prescantime;
 #define emplace_back push_back
 #endif
 
-
+// SpMM operation
 /**
   * Operation y = A*x+y on a semiring SR
   * A: a general CSB matrix (no specialization on booleans is necessary as this loop is independent of numerical values) 
@@ -46,6 +46,7 @@ void bicsb_gespmv(const BiCsb<NT, IT> & A, const RHS * __restrict x, LHS * __res
 
             IT threshold = std::max(static_cast<NT>(BALANCETH * rowave), static_cast<NT>(BREAKEVEN * ysize));
 
+            // Large/Irregular block row -> chunking + BMult
             if (btop[A.nbc] - btop[0] > threshold)
             {
                 // Build chunks for load balancing
