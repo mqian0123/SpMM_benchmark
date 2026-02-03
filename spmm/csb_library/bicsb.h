@@ -34,6 +34,20 @@ public:
 	IT rowsize() const { return m;}
     IT numnonzeros() const { return nz; }
 	bool isPar() const { return ispar; }
+	
+	std::size_t num_total_blocks() const {
+        return static_cast<std::size_t>(nbr) * static_cast<std::size_t>(nbc);
+    }
+
+    std::size_t num_nonempty_blocks() const {
+        std::size_t cnt = 0;
+        for (IT i = 0; i < nbr; ++i) {
+            for (IT j = 0; j < nbc; ++j) {
+                if (top[i][j] != top[i][j+1]) ++cnt;
+            }
+        }
+        return cnt;
+    }
 
 private:
 	void Init(int workers, IT forcelogbeta = 0);

@@ -43,3 +43,6 @@ Diagonal:
 | stokes                | 11,449,533 | 11,449,533 | 349,321,980   | Semiconductor Process Problem                  | [link](https://sparse.tamu.edu/VLSI/stokes)                          |
 | Queen_4147            | 4,147,110  | 4,147,110  | 316,548,962   | 2D/3D Problem                                  | [link](https://sparse.tamu.edu/Janna/Queen_4147)                     |
 | rajat31               | 4,690,002  | 4,690,002  | 20,316,253    | Circuit Simulation Problem                      | [link](https://sparse.tamu.edu/Rajat/rajat31)                        |
+
+
+salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu --cpus-per-task=32

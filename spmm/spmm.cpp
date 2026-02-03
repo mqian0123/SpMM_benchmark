@@ -8,10 +8,10 @@
 #include "mkl_spblas.h" // Intel MKL
 // #include <ittnotify.h>  // Intel Advisor
 
-#include <likwid.h>
+// #include <likwid.h>
 
 #define ALIGN 64
-#define RHSDIM 16   // number of columns in B, used for CSB
+#define RHSDIM 64   // number of columns in B, used for CSB
 
 #include "csb_library/csb.h"    // CSB Implementation
 
@@ -208,8 +208,8 @@ std::vector<double> experiment_spmm_csr(
     // Advisor
     // __itt_resume();
     // __itt_task_begin(domain, __itt_null, __itt_null, task_name);
-    LIKWID_MARKER_START("CSR");
-    #pragma omp parallel for schedule(dynamic)
+    // LIKWID_MARKER_START("CSR");
+    #pragma omp parallel for schedule(static)
     for (size_t row = 0; row < m; ++row) {
         int32_t row_start = A_ptr[row];
         int32_t row_end   = A_ptr[row + 1];
@@ -222,7 +222,7 @@ std::vector<double> experiment_spmm_csr(
             for (size_t j = 0; j < n; ++j) c_row[j] += val * b_row[j];
         }
     }
-    LIKWID_MARKER_STOP("CSR");
+    // LIKWID_MARKER_STOP("CSR");
     // __itt_task_end(domain);
     // __itt_pause();
 
@@ -250,18 +250,9 @@ std::vector<double> experiment_spmm_mkl(
     std::cout << "Beginning SpMM MKL" << std::endl;
     auto start_time = std::chrono::high_resolution_clock::now();
 
-    // Advisor
-    // __itt_resume();
-    // __itt_task_begin(domain, __itt_null, __itt_null, task_name);
-    LIKWID_MARKER_START("MKL");
-
     mkl_sparse_d_mm(SPARSE_OPERATION_NON_TRANSPOSE, alpha, A, descr,
                     SPARSE_LAYOUT_ROW_MAJOR, B_val, n, n, beta, C_val.data(), n);
-    
-    LIKWID_MARKER_STOP("MKL");
 
-    // __itt_task_end(domain);
-    // __itt_pause();
     
     auto end_time = std::chrono::high_resolution_clock::now();
     auto time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
@@ -294,6 +285,9 @@ std::vector<double> experiment_spmm_csb(
     int32_t forcelogbeta = 0;
     BiCsb<Value,Index> bicsb(csc, omp_get_max_threads(), forcelogbeta); // BiCsb (Csc<NT, IT> & csc, int workers, IT forcelogbeta = 0);
 
+    std::cout << "BiCsb total blocks: " << bicsb.num_total_blocks() << std::endl;
+    std::cout << "BiCsb nonempty blocks: " << bicsb.num_nonempty_blocks() << std::endl;
+
     typedef array<Value, RHSDIM> PACKED;
     std::vector<PACKED, aligned_allocator<PACKED, Alignment>> x(A_csr.ncols);
     std::vector<PACKED, aligned_allocator<PACKED, Alignment>> y_bicsb(A_csr.nrows);
@@ -317,11 +311,11 @@ std::vector<double> experiment_spmm_csb(
     // Advisor
     // __itt_resume();
     // __itt_task_begin(domain, __itt_null, __itt_null, task_name);
-    LIKWID_MARKER_START("CSB");
+    // LIKWID_MARKER_START("CSB");
 
     bicsb_gespmv<PTARR>(bicsb, &x[0], &y_bicsb[0]);
 
-    LIKWID_MARKER_STOP("CSB");   
+    // LIKWID_MARKER_STOP("CSB");   
 
     // __itt_task_end(domain);
     // __itt_pause();
@@ -359,7 +353,7 @@ bool compare_dense_matrices(const std::vector<double>& C1, const std::vector<dou
 // ================== Main ==================
 int main(int argc, char** argv) {
     // __itt_pause();
-    likwid_markerInit();
+    // likwid_markerInit();
     
     if (argc < 4) { 
         std::cerr << "Usage: " << argv[0] << " <matrix_file.mtx> <n_columns_B> <num_threads>" << std::endl; 
@@ -373,8 +367,13 @@ int main(int argc, char** argv) {
         std::cerr << "Error: num_threads > 0" << std::endl;
         return 1;
     }
+
+    cout << "OMP Threads: " << omp_get_max_threads() << " MKL Threads: " << mkl_get_max_threads() << endl;
+
     omp_set_num_threads(num_threads);
     mkl_set_num_threads(num_threads);
+    mkl_set_dynamic(false);
+
     cout << "OMP Threads: " << omp_get_max_threads() << " MKL Threads: " << mkl_get_max_threads() << endl;
 
     if (n <= 0) { 
@@ -407,7 +406,23 @@ int main(int argc, char** argv) {
     // std::cout << "CSR vs CSB match: " << (compare_dense_matrices(C_csr,C_csb,m,n) ? "YES" : "NO") << "\n";
     // std::cout << "MKL vs CSB match: " << (compare_dense_matrices(C_mkl,C_csb,m,n) ? "YES" : "NO") << "\n";
 
-    likwid_markerClose();
+    // likwid_markerClose();
     
+    const std::size_t N = 100'000'000;  // 1e8 ops, ~0.05–0.2s depending on freq
+    volatile double sink = 0.0;
+
+    auto t0 = std::chrono::high_resolution_clock::now();
+
+    #pragma omp parallel for reduction(+:sink)
+    for (std::size_t i = 0; i < N; ++i) {
+        sink += 1.0;
+    }
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> dt = t1 - t0;
+
+    std::cout << "[OMP sanity] threads=" << num_threads
+              << " time=" << dt.count() << " s\n";
+
     return 0;
 }

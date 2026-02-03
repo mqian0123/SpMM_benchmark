@@ -1,0 +1,34 @@
+# Compiler and flags
+CXX      ?= g++
+TARGET   ?= spmm
+SRC      := spmm.cpp
+
+# Expect MKLROOT to be set by your environment (e.g., source oneAPI setvars.sh)
+# Fallback path if MKLROOT isn't set:
+MKLROOT  ?= /opt/intel/oneapi/mkl/latest
+
+# Compile flags
+CXXFLAGS ?= -std=c++20 -O3 -g -march=native -funroll-loops -fstrict-aliasing -Wall -Wextra
+OMPFLAG  := -fopenmp
+
+# Include / lib paths
+INCLUDES := -I$(MKLROOT)/include
+LDFLAGS  := -L$(MKLROOT)/lib/intel64
+
+# Libraries (GNU OpenMP runtime -> use mkl_gnu_thread, NOT mkl_intel_thread/liomp5)
+LIBS := -Wl,--start-group \
+          -lmkl_intel_lp64 \
+          -lmkl_gnu_thread \
+          -lmkl_core \
+        -Wl,--end-group \
+        -lpthread -lm -ldl
+
+.PHONY: all clean
+
+all: $(TARGET)
+
+$(TARGET): $(SRC)
+	$(CXX) $(CXXFLAGS) $(OMPFLAG) $(INCLUDES) $(LDFLAGS) -o $@ $^ $(LIBS) $(OMPFLAG)
+
+clean:
+	rm -f $(TARGET) *.o
